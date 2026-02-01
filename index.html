@@ -1,0 +1,460 @@
+<<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitor de Distancia - Nivel Gasoil</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            padding: 40px;
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        .distance-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 15px;
+            padding: 40px 20px;
+            margin: 30px 0;
+            color: white;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .distance-value {
+            font-size: 96px;
+            font-weight: bold;
+            line-height: 1;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.2);
+        }
+        
+        .unit {
+            font-size: 28px;
+            margin-left: 10px;
+            opacity: 0.9;
+        }
+        
+        .distance-label {
+            font-size: 20px;
+            margin-top: 10px;
+            opacity: 0.9;
+        }
+        
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            background: #f8f9fa;
+            padding: 8px 20px;
+            border-radius: 50px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #2ecc71;
+            margin-right: 10px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .info-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: left;
+        }
+        
+        .info-label {
+            font-size: 12px;
+            color: #7f8c8d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .info-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-top: 5px;
+        }
+        
+        .update-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 20px 0;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .update-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .update-btn:active {
+            transform: translateY(0);
+        }
+        
+        .last-update {
+            color: #7f8c8d;
+            font-size: 14px;
+            margin-top: 15px;
+        }
+        
+        .error {
+            background: #ffeaea;
+            color: #e74c3c;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            display: none;
+            border-left: 4px solid #e74c3c;
+        }
+        
+        .loading {
+            display: none;
+            color: #7f8c8d;
+            margin: 20px 0;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .distance-value {
+                font-size: 72px;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📏 Monitor de Distancia</h1>
+        <div class="subtitle">Aplicación: nivelgasoil | Conexión TTN activa</div>
+        
+        <div class="status-indicator">
+            <div class="status-dot"></div>
+            <span id="connectionStatus">Conectado a TTN</span>
+        </div>
+        
+        <div class="distance-card">
+            <div class="distance-value">
+                <span id="distanceValue">--</span>
+                <span class="unit">mm</span>
+            </div>
+            <div class="distance-label">DISTANCIA MEDIDA</div>
+        </div>
+        
+        <div class="loading" id="loading">
+            🔄 Obteniendo datos de TTN...
+        </div>
+        
+        <div class="error" id="errorMessage">
+            <strong>Error:</strong> <span id="errorText"></span>
+        </div>
+        
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Aplicación TTN</div>
+                <div class="info-value">nivelgasoil</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Estado Sensor</div>
+                <div class="info-value" id="sensorStatus">OK</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Última Lectura</div>
+                <div class="info-value" id="lastReading">--</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Mensajes Hoy</div>
+                <div class="info-value" id="messageCount">0</div>
+            </div>
+        </div>
+        
+        <button class="update-btn" onclick="getTTNData()" id="updateBtn">
+            🔄 Obtener Última Distancia
+        </button>
+        
+        <div class="last-update" id="lastUpdate">
+            Última actualización: --
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURACIÓN TTN
+        const TTN_CONFIG = {
+            applicationId: 'nivelgasoil',
+            apiKey: 'NNSXS.LXJ4TZ5ZAWDWSQKGPVPSP2D37D25HZUJNXF5LFI.47QEBD5K6AG3PS2XRYISFDW2EMZALI3ZFZP5XLB3LFVKYRUK2O2A',
+            endpoint: 'https://nivelgasoil.data.thethingsnetwork.org/api/v2'
+        };
+
+        // Contador de mensajes
+        let messageCounter = 0;
+
+        // Función para decodificar los datos del sensor
+        function decodeUplink(input) {
+            var data = input.bytes;
+            var distance = (data[2] << 8 | data[3]); // Distancia en mm
+            
+            // Manejo de errores del sensor
+            if (distance === 0 || distance === 65535) {
+                return { 
+                    distance: distance,
+                    error: "Sensor error, out of range or no echo"
+                };
+            }
+            
+            return { 
+                distance: distance,
+                valid: true
+            };
+        }
+
+        // Función para convertir hexadecimal a bytes
+        function hexToBytes(hex) {
+            const bytes = [];
+            for (let i = 0; i < hex.length; i += 2) {
+                bytes.push(parseInt(hex.substr(i, 2), 16));
+            }
+            return bytes;
+        }
+
+        // Función principal para obtener datos de TTN
+        async function getTTNData() {
+            showLoading(true);
+            hideError();
+            
+            try {
+                // Obtener los últimos datos de TTN
+                const response = await fetch(`${TTN_CONFIG.endpoint}/query?last=1`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${TTN_CONFIG.apiKey}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Error TTN: ${response.status} ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                if (!data || data.length === 0) {
+                    throw new Error('No hay datos disponibles en TTN');
+                }
+                
+                // Obtener el último mensaje
+                const lastMessage = data[0];
+                console.log('Datos crudos de TTN:', lastMessage);
+                
+                // Verificar si tenemos payload
+                if (!lastMessage.raw) {
+                    throw new Error('No hay payload en el mensaje');
+                }
+                
+                // Decodificar el payload
+                const bytes = hexToBytes(lastMessage.raw);
+                const decoded = decodeUplink({ bytes: bytes });
+                
+                // Incrementar contador
+                messageCounter++;
+                
+                // Actualizar la interfaz
+                updateUI(decoded, lastMessage);
+                
+            } catch (error) {
+                showError(error.message);
+                console.error('Error detallado:', error);
+                
+                // Usar datos de prueba como fallback
+                useTestData();
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // Función para actualizar la interfaz
+        function updateUI(decoded, messageData) {
+            const distanceValue = document.getElementById('distanceValue');
+            const sensorStatus = document.getElementById('sensorStatus');
+            const lastReading = document.getElementById('lastReading');
+            const lastUpdate = document.getElementById('lastUpdate');
+            const messageCount = document.getElementById('messageCount');
+            
+            // Mostrar distancia
+            distanceValue.textContent = decoded.distance;
+            
+            // Estado del sensor
+            if (decoded.error) {
+                sensorStatus.textContent = 'ERROR';
+                sensorStatus.style.color = '#e74c3c';
+                showError(decoded.error);
+            } else {
+                sensorStatus.textContent = 'OK';
+                sensorStatus.style.color = '#2ecc71';
+            }
+            
+            // Formatear timestamp
+            const timestamp = messageData.time ? new Date(messageData.time) : new Date();
+            const timeString = timestamp.toLocaleTimeString('es-ES', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            const dateString = timestamp.toLocaleDateString('es-ES');
+            
+            lastReading.textContent = timeString;
+            lastUpdate.textContent = `Última actualización: ${dateString} ${timeString}`;
+            messageCount.textContent = messageCounter;
+            
+            // Actualizar botón
+            const updateBtn = document.getElementById('updateBtn');
+            updateBtn.textContent = '✅ Datos Obtenidos';
+            setTimeout(() => {
+                updateBtn.textContent = '🔄 Obtener Última Distancia';
+            }, 2000);
+            
+            // Log para depuración
+            console.log('Datos procesados:', {
+                distance: decoded.distance,
+                timestamp: timestamp,
+                rawData: messageData
+            });
+        }
+
+        // Función para mostrar datos de prueba (fallback)
+        function useTestData() {
+            console.log('Usando datos de prueba...');
+            
+            // Generar distancia aleatoria entre 120-1900mm
+            const testDistance = Math.floor(Math.random() * (1900 - 120 + 1)) + 120;
+            
+            const mockData = {
+                distance: testDistance,
+                valid: true
+            };
+            
+            const mockMessage = {
+                time: new Date().toISOString()
+            };
+            
+            // Actualizar contador
+            messageCounter++;
+            
+            // Actualizar UI con datos de prueba
+            updateUI(mockData, mockMessage);
+            
+            // Mostrar aviso
+            const sensorStatus = document.getElementById('sensorStatus');
+            sensorStatus.textContent = 'MODO PRUEBA';
+            sensorStatus.style.color = '#f39c12';
+            
+            const lastUpdate = document.getElementById('lastUpdate');
+            lastUpdate.textContent = `⚠️ Modo prueba - Datos simulados: ${new Date().toLocaleString('es-ES')}`;
+        }
+
+        // Funciones auxiliares
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+            document.getElementById('updateBtn').disabled = show;
+        }
+
+        function showError(message) {
+            document.getElementById('errorText').textContent = message;
+            document.getElementById('errorMessage').style.display = 'block';
+        }
+
+        function hideError() {
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        // Inicializar al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            // Intentar obtener datos reales al cargar
+            getTTNData();
+            
+            // Configurar auto-actualización cada 60 segundos
+            setInterval(getTTNData, 60000);
+            
+            // Mostrar notificación de inicio
+            console.log('Aplicación iniciada. Conectando a TTN...');
+            console.log('Aplicación ID:', TTN_CONFIG.applicationId);
+            
+            // Configurar notificaciones si el navegador lo soporta
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+        });
+        
+        // Función para notificar cambios importantes
+        function notifyUser(title, message) {
+            if (Notification.permission === 'granted') {
+                new Notification(title, { body: message });
+            }
+        }
+    </script>
+</body>
+</html>
