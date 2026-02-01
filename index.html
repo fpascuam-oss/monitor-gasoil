@@ -2,38 +2,66 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Test Webhook TTN</title>
+    <title>Prueba Definitiva Webhook TTN</title>
     <style>
-        body { font-family: Arial; padding: 20px; max-width: 800px; margin: 0 auto; }
-        .btn { background: #4285f4; color: white; padding: 12px 24px; border: none; border-radius: 4px; cursor: pointer; margin: 10px 5px; }
+        body { font-family: Arial; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; border-bottom: 2px solid #4285f4; padding-bottom: 10px; }
+        .btn { background: #4285f4; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; margin: 10px 5px; font-size: 16px; }
         .btn:hover { background: #3367d6; }
-        .result { margin: 20px 0; padding: 15px; border-radius: 5px; }
-        .success { background: #e8f5e9; border-left: 5px solid #4caf50; }
-        .error { background: #ffebee; border-left: 5px solid #f44336; }
-        .info { background: #e3f2fd; border-left: 5px solid #2196f3; }
-        pre { background: #f5f5f5; padding: 10px; border-radius: 3px; overflow: auto; }
+        .btn-success { background: #34a853; }
+        .btn-warning { background: #fbbc05; }
+        .btn-danger { background: #ea4335; }
+        .result { margin: 20px 0; padding: 20px; border-radius: 5px; }
+        .success { background: #e8f5e9; border-left: 5px solid #34a853; }
+        .warning { background: #fff8e1; border-left: 5px solid #fbbc05; }
+        .error { background: #ffebee; border-left: 5px solid #ea4335; }
+        pre { background: #f8f9fa; padding: 15px; border-radius: 5px; overflow: auto; font-size: 12px; }
+        .step { background: #e8f0fe; padding: 15px; border-radius: 5px; margin: 15px 0; }
+        .step-number { background: #4285f4; color: white; width: 30px; height: 30px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-right: 10px; }
     </style>
 </head>
 <body>
-    <h1>🧪 Prueba Webhook TTN</h1>
-    
-    <div>
-        <button class="btn" onclick="getData()">📡 Obtener Datos</button>
-        <button class="btn" onclick="testDecodedPayload()">🔧 Probar decoded_payload</button>
-        <button class="btn" onclick="testNormalized()">🔄 Probar formato normalizado</button>
-        <button class="btn" onclick="forceDeviceMessage()">📡 Forzar mensaje dispositivo</button>
-    </div>
-    
-    <div id="result" class="result"></div>
-    
-    <div class="info">
-        <h3>📋 Instrucciones:</h3>
-        <ol>
-            <li>Primero haz clic en "Obtener Datos" para ver el estado actual</li>
-            <li>Luego prueba con "Probar decoded_payload" (debería funcionar)</li>
-            <li>Si no funciona, ve a TTN y cambia el formato del webhook a "Leave as is"</li>
-            <li>Finalmente, haz que tu dispositivo envíe un mensaje real</li>
-        </ol>
+    <div class="container">
+        <h1>🚀 Prueba Definitiva Webhook TTN</h1>
+        
+        <div class="step">
+            <div class="step-number">1</div>
+            <strong>Configuración del webhook en TTN:</strong>
+            <p>Ve a TTN Console → Applications → nivelgasoil → Integrations → Webhooks</p>
+            <p>Configura el webhook con estas opciones:</p>
+            <ul>
+                <li><strong>Webhook format:</strong> JSON</li>
+                <li><strong>Base URL:</strong> Tu URL de Google Script</li>
+                <li><strong>Headers:</strong> Content-Type: application/json</li>
+                <li><strong>Message type:</strong> Selecciona la opción que NO sea "normalized"</li>
+            </ul>
+        </div>
+        
+        <div class="step">
+            <div class="step-number">2</div>
+            <strong>Pruebas desde aquí:</strong>
+            <div style="margin: 15px 0;">
+                <button class="btn" onclick="getCurrentData()">📡 Ver datos actuales</button>
+                <button class="btn btn-success" onclick="testWithRealTTNData()">🧪 Probar con datos REALES de TTN</button>
+                <button class="btn btn-warning" onclick="testVariousFormats()">🔄 Probar múltiples formatos</button>
+                <button class="btn" onclick="openTTN()">🔗 Abrir TTN Console</button>
+                <button class="btn btn-danger" onclick="resetData()">🗑️ Resetear datos</button>
+            </div>
+        </div>
+        
+        <div id="result" class="result"></div>
+        
+        <div class="step">
+            <div class="step-number">3</div>
+            <strong>Diagnóstico:</strong>
+            <div>
+                <button class="btn" onclick="checkScriptStatus()">🔍 Ver estado del script</button>
+                <button class="btn" onclick="viewRawData()">📋 Ver datos crudos recibidos</button>
+            </div>
+        </div>
+        
+        <div id="debugInfo"></div>
     </div>
 
     <script>
@@ -45,37 +73,43 @@
             resultDiv.innerHTML = `<h3>${title}</h3><pre>${JSON.stringify(content, null, 2)}</pre>`;
         }
         
-        async function getData() {
+        async function getCurrentData() {
             try {
                 const response = await fetch(SCRIPT_URL);
                 const data = await response.json();
                 
                 if (data.success) {
-                    showResult('success', '✅ Datos REALES del webhook', data);
+                    showResult('success', '✅ DATOS REALES DEL WEBHOOK', data);
                 } else {
-                    showResult('error', '⚠️ Modo RESPALDO (sin webhook aún)', data);
+                    showResult('warning', '⚠️ MODO RESPALDO (sin webhook activo)', data);
                 }
             } catch (error) {
-                showResult('error', '❌ Error de conexión', { error: error.message });
+                showResult('error', '❌ ERROR DE CONEXIÓN', { error: error.message });
             }
         }
         
-        async function testDecodedPayload() {
-            // Formato CORRECTO (decoded_payload)
-            const testData = {
-                received_at: new Date().toISOString(),
-                uplink_message: {
-                    decoded_payload: {
-                        Bat: 3.42,
-                        Distance: "1550 mm",
-                        TempC_DS18B20: "19.0",
-                        Interrupt_flag: 0,
-                        Sensor_flag: 1
+        async function testWithRealTTNData() {
+            // Datos EXACTOS que mostró TTN antes
+            const realTTNData = {
+                "name": "as.up.data.forward",
+                "time": "2026-02-01T11:54:29.881844310Z",
+                "data": {
+                    "@type": "type.googleapis.com/ttn.lorawan.v3.ApplicationUp",
+                    "end_device_ids": {
+                        "device_id": "eui-a84041602187da56",
+                        "application_ids": {"application_id": "nivelgasoil"}
                     },
-                    frm_payload: "TEST_DECODED"
-                },
-                end_device_ids: {
-                    device_id: "eui-a84041602187da56"
+                    "received_at": "2026-02-01T11:54:29.879046049Z",
+                    "uplink_message": {
+                        "frm_payload": "DR0F1gAAAAE=",
+                        "decoded_payload": {
+                            "Bat": 3.357,
+                            "Distance": "1494 mm",
+                            "Interrupt_flag": 0,
+                            "Sensor_flag": 1,
+                            "TempC_DS18B20": "0.00"
+                        }
+                    }
                 }
             };
             
@@ -83,61 +117,122 @@
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(testData)
+                    body: JSON.stringify(realTTNData)
                 });
                 
                 const data = await response.json();
-                showResult('info', '🧪 Prueba decoded_payload enviada', data);
+                showResult('info', '🧪 Datos REALES de TTN enviados', data);
                 
-                // Esperar y actualizar
-                setTimeout(getData, 1500);
+                // Esperar y verificar
+                setTimeout(getCurrentData, 2000);
                 
             } catch (error) {
-                showResult('error', '❌ Error en prueba', { error: error.message });
+                showResult('error', '❌ Error enviando datos', { error: error.message });
             }
         }
         
-        async function testNormalized() {
-            // Formato "normalized" (puede que sea lo que envía TTN)
-            const testData = {
-                message: {
-                    uplink_message: {
+        async function testVariousFormats() {
+            // Probar 3 formatos diferentes
+            const formats = [
+                {
+                    name: "Formato 1: decoded_payload directo",
+                    data: {
                         received_at: new Date().toISOString(),
-                        decoded_payload: {
-                            Bat: 3.44,
-                            Distance: "1600 mm",
-                            TempC_DS18B20: "20.0"
+                        uplink_message: {
+                            decoded_payload: {
+                                Bat: 3.40,
+                                Distance: "1500 mm",
+                                TempC_DS18B20: "20.0"
+                            }
+                        },
+                        end_device_ids: {
+                            device_id: "eui-a84041602187da56"
                         }
                     }
                 },
-                device_id: "eui-a84041602187da56"
-            };
+                {
+                    name: "Formato 2: estructura anidada",
+                    data: {
+                        message: {
+                            uplink_message: {
+                                received_at: new Date().toISOString(),
+                                decoded_payload: {
+                                    Bat: 3.41,
+                                    Distance: "1510 mm"
+                                }
+                            }
+                        }
+                    }
+                },
+                {
+                    name: "Formato 3: texto plano",
+                    data: {
+                        data: '{"Bat":3.42,"Distance":"1520 mm"}',
+                        timestamp: new Date().toISOString()
+                    }
+                }
+            ];
             
+            for (let format of formats) {
+                try {
+                    const response = await fetch(SCRIPT_URL, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(format.data)
+                    });
+                    
+                    const result = await response.json();
+                    console.log(`${format.name}:`, result);
+                    
+                    if (result.success) {
+                        alert(`${format.name} - ÉXITO: ${result.data.distance}mm`);
+                    }
+                } catch (error) {
+                    console.error(`${format.name} - ERROR:`, error);
+                }
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+            
+            getCurrentData();
+        }
+        
+        function openTTN() {
+            window.open('https://console.thethingsnetwork.org/applications/nivelgasoil', '_blank');
+        }
+        
+        async function resetData() {
+            if (confirm('¿Seguro que quieres resetear todos los datos?')) {
+                // Podríamos añadir una función de reset en el Google Script
+                alert('Para resetear, actualiza el Google Script o espera a que expire (las Properties duran 90 días)');
+            }
+        }
+        
+        async function checkScriptStatus() {
             try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(testData)
-                });
-                
+                const response = await fetch(SCRIPT_URL + '?test=status');
                 const data = await response.json();
-                showResult('info', '🔄 Prueba formato normalizado', data);
-                
-                setTimeout(getData, 1500);
-                
+                document.getElementById('debugInfo').innerHTML = 
+                    `<div class="result info"><h3>Estado del Script</h3><pre>${JSON.stringify(data, null, 2)}</pre></div>`;
+            } catch (error) {
+                document.getElementById('debugInfo').innerHTML = 
+                    `<div class="result error"><h3>Error</h3><p>${error.message}</p></div>`;
+            }
+        }
+        
+        async function viewRawData() {
+            try {
+                const response = await fetch(SCRIPT_URL + '?raw=true');
+                const data = await response.json();
+                showResult('info', '📋 Datos crudos almacenados', data);
             } catch (error) {
                 showResult('error', '❌ Error', { error: error.message });
             }
         }
         
-        function forceDeviceMessage() {
-            alert('Para forzar un mensaje real:\n\n1. Reinicia tu sensor LDDS75\n2. O espera su próximo envío automático\n\nLos sensores normalmente envían cada 1-4 horas.');
-        }
-        
-        // Auto-probar al cargar
+        // Inicializar
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('URL del script:', SCRIPT_URL);
-            getData();
+            console.log('Sistema listo. URL:', SCRIPT_URL);
+            getCurrentData();
         });
     </script>
 </body>
