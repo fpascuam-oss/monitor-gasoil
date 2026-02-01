@@ -1,648 +1,143 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitor Gasoil - Webhook TTN</title>
+    <title>Test Webhook TTN</title>
     <style>
-        :root {
-            --primary: #3498db;
-            --success: #27ae60;
-            --warning: #f39c12;
-            --danger: #e74c3c;
-            --dark: #2c3e50;
-            --light: #ecf0f1;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', system-ui, sans-serif;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        
-        .dashboard {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
-            padding: 40px;
-            max-width: 900px;
-            width: 100%;
-            animation: slideIn 0.5s ease-out;
-        }
-        
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 40px;
-            border-bottom: 2px solid var(--light);
-            padding-bottom: 20px;
-        }
-        
-        h1 {
-            color: var(--dark);
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-        }
-        
-        .subtitle {
-            color: #7f8c8d;
-            font-size: 1.1em;
-        }
-        
-        .status-card {
-            background: var(--light);
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-        
-        .status-indicator {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .status-dot {
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: var(--success);
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        
-        .status-text {
-            font-weight: bold;
-            font-size: 1.2em;
-            color: var(--dark);
-        }
-        
-        .webhook-info {
-            background: #e8f4fc;
-            padding: 12px 20px;
-            border-radius: 10px;
-            font-family: monospace;
-            font-size: 0.9em;
-            color: var(--dark);
-        }
-        
-        .main-display {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 30px;
-            margin-bottom: 40px;
-        }
-        
-        @media (max-width: 768px) {
-            .main-display {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        .distance-container {
-            background: linear-gradient(135deg, var(--primary) 0%, #2980b9 100%);
-            border-radius: 20px;
-            padding: 50px 30px;
-            color: white;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(52, 152, 219, 0.3);
-        }
-        
-        .distance-value {
-            font-size: 120px;
-            font-weight: bold;
-            line-height: 1;
-            margin: 20px 0;
-            text-shadow: 3px 3px 6px rgba(0,0,0,0.2);
-        }
-        
-        .distance-unit {
-            font-size: 32px;
-            opacity: 0.9;
-            margin-left: 10px;
-        }
-        
-        .distance-label {
-            font-size: 1.3em;
-            opacity: 0.9;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            margin-top: 10px;
-        }
-        
-        .info-sidebar {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-        
-        .info-card {
-            background: var(--light);
-            border-radius: 15px;
-            padding: 25px;
-            border-left: 5px solid var(--primary);
-        }
-        
-        .info-title {
-            font-size: 0.9em;
-            color: var(--dark);
-            opacity: 0.7;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        
-        .info-value {
-            font-size: 2em;
-            font-weight: bold;
-            color: var(--dark);
-        }
-        
-        .info-subvalue {
-            font-size: 1em;
-            color: #7f8c8d;
-            margin-top: 5px;
-        }
-        
-        .controls {
-            display: flex;
-            gap: 20px;
-            margin-top: 30px;
-            flex-wrap: wrap;
-        }
-        
-        .btn {
-            flex: 1;
-            min-width: 200px;
-            padding: 20px;
-            border: none;
-            border-radius: 12px;
-            font-size: 1.1em;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-        }
-        
-        .btn-primary {
-            background: var(--success);
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background: #219653;
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(39, 174, 96, 0.3);
-        }
-        
-        .btn-secondary {
-            background: var(--light);
-            color: var(--dark);
-        }
-        
-        .btn-secondary:hover {
-            background: #d5dbdb;
-        }
-        
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 30px;
-        }
-        
-        .spinner {
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid var(--primary);
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .footer {
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid var(--light);
-            text-align: center;
-            color: #7f8c8d;
-            font-size: 0.9em;
-        }
-        
-        .last-update {
-            background: #f8f9fa;
-            padding: 10px 20px;
-            border-radius: 10px;
-            margin-top: 10px;
-            font-family: monospace;
-        }
-        
-        /* Estados especiales */
-        .low-level { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); }
-        .medium-level { background: linear-gradient(135deg, #f39c12 0%, #d68910 100%); }
-        .high-level { background: linear-gradient(135deg, #27ae60 0%, #219653 100%); }
-        
-        .status-waiting .status-dot { background: var(--warning); animation: none; }
-        .status-error .status-dot { background: var(--danger); animation: none; }
+        body { font-family: Arial; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .btn { background: #4285f4; color: white; padding: 12px 24px; border: none; border-radius: 4px; cursor: pointer; margin: 10px 5px; }
+        .btn:hover { background: #3367d6; }
+        .result { margin: 20px 0; padding: 15px; border-radius: 5px; }
+        .success { background: #e8f5e9; border-left: 5px solid #4caf50; }
+        .error { background: #ffebee; border-left: 5px solid #f44336; }
+        .info { background: #e3f2fd; border-left: 5px solid #2196f3; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 3px; overflow: auto; }
     </style>
 </head>
 <body>
-    <div class="dashboard">
-        <div class="header">
-            <h1>
-                <span style="font-size: 1.2em;">🛢️</span>
-                Monitor de Gasoil
-            </h1>
-            <p class="subtitle">Datos en tiempo real vía Webhook TTN + Google Apps Script</p>
-        </div>
-        
-        <div class="status-card">
-            <div class="status-indicator">
-                <div class="status-dot"></div>
-                <div class="status-text" id="statusText">Esperando datos del webhook...</div>
-            </div>
-            <div class="webhook-info">
-                App: nivelgasoil • Device: eui-a84041602187da56
-            </div>
-        </div>
-        
-        <div class="main-display">
-            <div class="distance-container" id="distanceContainer">
-                <div style="font-size: 1.2em; opacity: 0.9;">DISTANCIA ACTUAL</div>
-                <div class="distance-value">
-                    <span id="distanceValue">--</span>
-                    <span class="distance-unit">mm</span>
-                </div>
-                <div class="distance-label">Sensor al nivel del combustible</div>
-            </div>
-            
-            <div class="info-sidebar">
-                <div class="info-card">
-                    <div class="info-title">NIVEL ESTIMADO</div>
-                    <div class="info-value" id="levelValue">--</div>
-                    <div class="info-subvalue" id="levelPercent">--% de capacidad</div>
-                </div>
-                
-                <div class="info-card">
-                    <div class="info-title">BATERÍA</div>
-                    <div class="info-value" id="batteryValue">-- V</div>
-                    <div class="info-subvalue">Sensor LDDS75</div>
-                </div>
-                
-                <div class="info-card">
-                    <div class="info-title">ÚLTIMA ACTUALIZACIÓN</div>
-                    <div class="info-value" id="timeValue">--:--</div>
-                    <div class="info-subvalue" id="dateValue">--/--/----</div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="loading" id="loading">
-            <div class="spinner"></div>
-            <p style="margin-top: 15px; color: var(--dark);">Obteniendo datos del webhook...</p>
-        </div>
-        
-        <div class="controls">
-            <button class="btn btn-primary" onclick="fetchWebhookData()" id="fetchBtn">
-                <span>🔄</span>
-                <span id="btnText">Obtener Datos Actuales</span>
-            </button>
-            <button class="btn btn-secondary" onclick="showDetails()">
-                <span>📊</span>
-                Ver Detalles Técnicos
-            </button>
-            <button class="btn btn-secondary" onclick="openTTNConsole()">
-                <span>🔗</span>
-                Abrir TTN Console
-            </button>
-        </div>
-        
-        <div class="footer">
-            <p>Sistema conectado mediante webhook TTN → Google Apps Script → GitHub Pages</p>
-            <div class="last-update" id="lastUpdate">
-                Estado: No se ha obtenido datos aún
-            </div>
-        </div>
+    <h1>🧪 Prueba Webhook TTN</h1>
+    
+    <div>
+        <button class="btn" onclick="getData()">📡 Obtener Datos</button>
+        <button class="btn" onclick="testDecodedPayload()">🔧 Probar decoded_payload</button>
+        <button class="btn" onclick="testNormalized()">🔄 Probar formato normalizado</button>
+        <button class="btn" onclick="forceDeviceMessage()">📡 Forzar mensaje dispositivo</button>
+    </div>
+    
+    <div id="result" class="result"></div>
+    
+    <div class="info">
+        <h3>📋 Instrucciones:</h3>
+        <ol>
+            <li>Primero haz clic en "Obtener Datos" para ver el estado actual</li>
+            <li>Luego prueba con "Probar decoded_payload" (debería funcionar)</li>
+            <li>Si no funciona, ve a TTN y cambia el formato del webhook a "Leave as is"</li>
+            <li>Finalmente, haz que tu dispositivo envíe un mensaje real</li>
+        </ol>
     </div>
 
     <script>
-        // Configuración
-        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwvNKLCzrhwAqUU3GRgEUdrVQNYp2iy-Dn5SAZ5QMCkHhRTwUK52bcOuU-xUXKS0VtTRg/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxEHHmB9cSJ7H5KUyXvy8GZf98pGPnMWZhYT7OdLHjPw4nXxjORyZf7W_8vm_MJU6_mUg/exec';
         
-        // Parámetros del tanque
-        const TANK_CONFIG = {
-            DIST_FULL: 120,     // mm cuando está lleno (1100L)
-            DIST_EMPTY: 1900,   // mm cuando está vacío (0L)
-            VOLUME_MAX: 1100    // litros totales
-        };
+        function showResult(type, title, content) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.className = 'result ' + type;
+            resultDiv.innerHTML = `<h3>${title}</h3><pre>${JSON.stringify(content, null, 2)}</pre>`;
+        }
         
-        // Estado de la aplicación
-        let appState = {
-            lastData: null,
-            lastUpdate: null,
-            isRealData: false,
-            updateCount: 0,
-            autoUpdateInterval: null
-        };
+        async function getData() {
+            try {
+                const response = await fetch(SCRIPT_URL);
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult('success', '✅ Datos REALES del webhook', data);
+                } else {
+                    showResult('error', '⚠️ Modo RESPALDO (sin webhook aún)', data);
+                }
+            } catch (error) {
+                showResult('error', '❌ Error de conexión', { error: error.message });
+            }
+        }
         
-        // Función principal para obtener datos
-        async function fetchWebhookData() {
-            // Mostrar loading
-            showLoading(true);
-            
-            // Actualizar estado
-            updateStatus('waiting', '🔄 Conectando con webhook...');
-            
-            // Deshabilitar botón temporalmente
-            const btn = document.getElementById('fetchBtn');
-            const btnText = document.getElementById('btnText');
-            btn.disabled = true;
-            btnText.textContent = 'Conectando...';
+        async function testDecodedPayload() {
+            // Formato CORRECTO (decoded_payload)
+            const testData = {
+                received_at: new Date().toISOString(),
+                uplink_message: {
+                    decoded_payload: {
+                        Bat: 3.42,
+                        Distance: "1550 mm",
+                        TempC_DS18B20: "19.0",
+                        Interrupt_flag: 0,
+                        Sensor_flag: 1
+                    },
+                    frm_payload: "TEST_DECODED"
+                },
+                end_device_ids: {
+                    device_id: "eui-a84041602187da56"
+                }
+            };
             
             try {
-                console.log('🔗 Solicitando datos a Google Script...');
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(testData)
+                });
                 
-                const response = await fetch(GOOGLE_SCRIPT_URL);
+                const data = await response.json();
+                showResult('info', '🧪 Prueba decoded_payload enviada', data);
                 
-                if (!response.ok) {
-                    throw new Error(`Error HTTP ${response.status}: ${response.statusText}`);
-                }
-                
-                const result = await response.json();
-                console.log('📦 Datos recibidos:', result);
-                
-                // Procesar respuesta
-                if (result.success) {
-                    // Datos reales del webhook
-                    appState.isRealData = true;
-                    appState.lastData = result.data;
-                    appState.lastUpdate = new Date();
-                    appState.updateCount++;
-                    
-                    updateDisplay(result.data);
-                    updateStatus('connected', '✅ Datos reales del webhook TTN');
-                    
-                } else {
-                    // Datos simulados o de respaldo
-                    appState.isRealData = false;
-                    appState.lastData = result.data;
-                    appState.lastUpdate = new Date();
-                    
-                    updateDisplay(result.data);
-                    updateStatus('warning', '⚠️ ' + result.message);
-                }
-                
-                // Actualizar información de última actualización
-                updateLastUpdateInfo();
+                // Esperar y actualizar
+                setTimeout(getData, 1500);
                 
             } catch (error) {
-                console.error('❌ Error al obtener datos:', error);
-                
-                // Usar datos de respaldo
-                useFallbackData();
-                updateStatus('error', '❌ Error de conexión - Modo respaldo');
-                
-            } finally {
-                // Ocultar loading
-                showLoading(false);
-                
-                // Restaurar botón
-                btn.disabled = false;
-                btnText.textContent = 'Actualizar Datos';
-                
-                // Efecto visual temporal
-                setTimeout(() => {
-                    btnText.textContent = 'Obtener Datos Actuales';
-                }, 2000);
+                showResult('error', '❌ Error en prueba', { error: error.message });
             }
         }
         
-        // Función para actualizar la visualización
-        function updateDisplay(data) {
-            // Distancia
-            const distance = data.distance || 0;
-            document.getElementById('distanceValue').textContent = distance;
-            
-            // Actualizar color del contenedor según nivel
-            const level = calculateLevel(distance);
-            updateContainerColor(level.percent);
-            
-            // Nivel estimado
-            document.getElementById('levelValue').textContent = `${level.liters} L`;
-            document.getElementById('levelPercent').textContent = `${level.percent}% de capacidad`;
-            
-            // Batería
-            const battery = data.battery || 0;
-            document.getElementById('batteryValue').textContent = `${battery.toFixed(2)} V`;
-            
-            // Tiempo
-            const timestamp = new Date(data.timestamp || new Date());
-            document.getElementById('timeValue').textContent = 
-                timestamp.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-            document.getElementById('dateValue').textContent = 
-                timestamp.toLocaleDateString('es-ES');
-            
-            // Log para depuración
-            console.log(`📊 Display actualizado: ${distance}mm → ${level.liters}L (${level.percent}%)`);
-        }
-        
-        // Función para calcular nivel del tanque
-        function calculateLevel(distance) {
-            const { DIST_FULL, DIST_EMPTY, VOLUME_MAX } = TANK_CONFIG;
-            
-            // Interpolación lineal inversa
-            let liters = VOLUME_MAX * (DIST_EMPTY - distance) / (DIST_EMPTY - DIST_FULL);
-            
-            // Limitar valores
-            if (liters < 0) liters = 0;
-            if (liters > VOLUME_MAX) liters = VOLUME_MAX;
-            
-            const percent = Math.round((liters / VOLUME_MAX) * 100);
-            
-            return {
-                liters: Math.round(liters),
-                percent: percent,
-                distance: distance
-            };
-        }
-        
-        // Función para actualizar color del contenedor
-        function updateContainerColor(percent) {
-            const container = document.getElementById('distanceContainer');
-            
-            // Remover clases anteriores
-            container.classList.remove('high-level', 'medium-level', 'low-level');
-            
-            // Añadir clase según nivel
-            if (percent >= 60) {
-                container.classList.add('high-level');
-            } else if (percent >= 20) {
-                container.classList.add('medium-level');
-            } else {
-                container.classList.add('low-level');
-            }
-        }
-        
-        // Función para datos de respaldo
-        function useFallbackData() {
-            console.log('🔄 Usando datos de respaldo...');
-            
-            // Usar el último dato conocido (1494mm de tu mensaje)
-            const fallbackData = {
-                distance: 1494,
-                battery: 3.36,
-                timestamp: new Date().toISOString(),
-                simulated: true
+        async function testNormalized() {
+            // Formato "normalized" (puede que sea lo que envía TTN)
+            const testData = {
+                message: {
+                    uplink_message: {
+                        received_at: new Date().toISOString(),
+                        decoded_payload: {
+                            Bat: 3.44,
+                            Distance: "1600 mm",
+                            TempC_DS18B20: "20.0"
+                        }
+                    }
+                },
+                device_id: "eui-a84041602187da56"
             };
             
-            appState.lastData = fallbackData;
-            appState.lastUpdate = new Date();
-            
-            updateDisplay(fallbackData);
-        }
-        
-        // Función para actualizar estado
-        function updateStatus(type, message) {
-            const statusDot = document.querySelector('.status-dot');
-            const statusText = document.getElementById('statusText');
-            
-            // Actualizar clases
-            const statusCard = document.querySelector('.status-card');
-            statusCard.classList.remove('status-waiting', 'status-error');
-            
-            if (type === 'waiting') {
-                statusCard.classList.add('status-waiting');
-                statusDot.style.background = 'var(--warning)';
-            } else if (type === 'error') {
-                statusCard.classList.add('status-error');
-                statusDot.style.background = 'var(--danger)';
-            } else {
-                statusDot.style.background = 'var(--success)';
-                statusDot.style.animation = 'pulse 2s infinite';
-            }
-            
-            statusText.textContent = message;
-        }
-        
-        // Función para actualizar información de última actualización
-        function updateLastUpdateInfo() {
-            if (!appState.lastUpdate) return;
-            
-            const now = new Date();
-            const diffMs = now - appState.lastUpdate;
-            const diffSec = Math.floor(diffMs / 1000);
-            const diffMin = Math.floor(diffSec / 60);
-            
-            let message = '';
-            
-            if (diffSec < 60) {
-                message = `Actualizado hace ${diffSec} segundos`;
-            } else if (diffMin < 60) {
-                message = `Actualizado hace ${diffMin} minuto${diffMin > 1 ? 's' : ''}`;
-            } else {
-                message = `Actualizado a las ${appState.lastUpdate.toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit'})}`;
-            }
-            
-            if (appState.isRealData) {
-                message += ' • Datos reales del webhook';
-            } else {
-                message += ' • Modo respaldo';
-            }
-            
-            message += ` • ${appState.updateCount} actualizaciones`;
-            
-            document.getElementById('lastUpdate').textContent = message;
-        }
-        
-        // Funciones auxiliares
-        function showLoading(show) {
-            document.getElementById('loading').style.display = show ? 'block' : 'none';
-        }
-        
-        function showDetails() {
-            if (appState.lastData) {
-                alert(`Detalles técnicos:\n\n` +
-                      `Distancia: ${appState.lastData.distance} mm\n` +
-                      `Batería: ${appState.lastData.battery} V\n` +
-                      `Timestamp: ${new Date(appState.lastData.timestamp).toLocaleString('es-ES')}\n` +
-                      `Tipo: ${appState.isRealData ? 'Datos reales (webhook)' : 'Datos de respaldo'}\n\n` +
-                      `Estos datos se actualizan automáticamente cada 60 segundos.`);
-            } else {
-                alert('No hay datos disponibles aún. Haz clic en "Obtener Datos Actuales".');
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(testData)
+                });
+                
+                const data = await response.json();
+                showResult('info', '🔄 Prueba formato normalizado', data);
+                
+                setTimeout(getData, 1500);
+                
+            } catch (error) {
+                showResult('error', '❌ Error', { error: error.message });
             }
         }
         
-        function openTTNConsole() {
-            window.open('https://console.thethingsnetwork.org/applications/nivelgasoil', '_blank');
+        function forceDeviceMessage() {
+            alert('Para forzar un mensaje real:\n\n1. Reinicia tu sensor LDDS75\n2. O espera su próximo envío automático\n\nLos sensores normalmente envían cada 1-4 horas.');
         }
         
-        // Inicializar aplicación
-        function initApp() {
-            console.log('🚀 Iniciando Monitor de Gasoil...');
-            console.log('Google Script URL:', GOOGLE_SCRIPT_URL);
-            console.log('Configuración del tanque:', TANK_CONFIG);
-            
-            // Mostrar datos iniciales (último dato conocido)
-            useFallbackData();
-            
-            // Obtener datos actuales automáticamente
-            fetchWebhookData();
-            
-            // Configurar auto-actualización cada 60 segundos
-            appState.autoUpdateInterval = setInterval(fetchWebhookData, 60000);
-            
-            // Actualizar contador de tiempo cada 30 segundos
-            setInterval(updateLastUpdateInfo, 30000);
-            
-            // Configurar notificaciones si están disponibles
-            if ('Notification' in window && Notification.permission === 'default') {
-                Notification.requestPermission();
-            }
-        }
-        
-        // Iniciar cuando se cargue la página
-        document.addEventListener('DOMContentLoaded', initApp);
-        
-        // Limpiar intervalo al salir
-        window.addEventListener('beforeunload', function() {
-            if (appState.autoUpdateInterval) {
-                clearInterval(appState.autoUpdateInterval);
-            }
+        // Auto-probar al cargar
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('URL del script:', SCRIPT_URL);
+            getData();
         });
     </script>
 </body>
