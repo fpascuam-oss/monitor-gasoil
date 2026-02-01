@@ -2,237 +2,158 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Prueba Definitiva Webhook TTN</title>
+    <title>Prueba Google Script CORREGIDO</title>
     <style>
-        body { font-family: Arial; padding: 20px; background: #f5f5f5; }
-        .container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1 { color: #333; border-bottom: 2px solid #4285f4; padding-bottom: 10px; }
+        body { font-family: Arial; padding: 20px; background: #f0f2f5; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         .btn { background: #4285f4; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; margin: 10px 5px; font-size: 16px; }
         .btn:hover { background: #3367d6; }
-        .btn-success { background: #34a853; }
-        .btn-warning { background: #fbbc05; }
-        .btn-danger { background: #ea4335; }
-        .result { margin: 20px 0; padding: 20px; border-radius: 5px; }
-        .success { background: #e8f5e9; border-left: 5px solid #34a853; }
-        .warning { background: #fff8e1; border-left: 5px solid #fbbc05; }
-        .error { background: #ffebee; border-left: 5px solid #ea4335; }
-        pre { background: #f8f9fa; padding: 15px; border-radius: 5px; overflow: auto; font-size: 12px; }
-        .step { background: #e8f0fe; padding: 15px; border-radius: 5px; margin: 15px 0; }
-        .step-number { background: #4285f4; color: white; width: 30px; height: 30px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-right: 10px; }
+        .result { margin: 20px 0; padding: 20px; border-radius: 5px; background: #f8f9fa; }
+        pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow: auto; font-size: 14px; }
+        .success { border-left: 5px solid #34a853; }
+        .error { border-left: 5px solid #ea4335; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🚀 Prueba Definitiva Webhook TTN</h1>
+        <h1>🛠️ Prueba Google Script Corregido</h1>
         
-        <div class="step">
-            <div class="step-number">1</div>
-            <strong>Configuración del webhook en TTN:</strong>
-            <p>Ve a TTN Console → Applications → nivelgasoil → Integrations → Webhooks</p>
-            <p>Configura el webhook con estas opciones:</p>
-            <ul>
-                <li><strong>Webhook format:</strong> JSON</li>
-                <li><strong>Base URL:</strong> Tu URL de Google Script</li>
-                <li><strong>Headers:</strong> Content-Type: application/json</li>
-                <li><strong>Message type:</strong> Selecciona la opción que NO sea "normalized"</li>
-            </ul>
-        </div>
+        <p><strong>URL del Script:</strong><br>
+        <input type="text" id="scriptUrl" value="https://script.google.com/macros/s/AKfycbxEHHmB9cSJ7H5KUyXvy8GZf98pGPnMWZhYT7OdLHjPw4nXxjORyZf7W_8vm_MJU6_mUg/exec" style="width: 100%; padding: 10px; margin: 10px 0;"></p>
         
-        <div class="step">
-            <div class="step-number">2</div>
-            <strong>Pruebas desde aquí:</strong>
-            <div style="margin: 15px 0;">
-                <button class="btn" onclick="getCurrentData()">📡 Ver datos actuales</button>
-                <button class="btn btn-success" onclick="testWithRealTTNData()">🧪 Probar con datos REALES de TTN</button>
-                <button class="btn btn-warning" onclick="testVariousFormats()">🔄 Probar múltiples formatos</button>
-                <button class="btn" onclick="openTTN()">🔗 Abrir TTN Console</button>
-                <button class="btn btn-danger" onclick="resetData()">🗑️ Resetear datos</button>
-            </div>
+        <div>
+            <button class="btn" onclick="testGET()">📡 Probar GET</button>
+            <button class="btn" onclick="testPOST()">🔄 Probar POST</button>
+            <button class="btn" onclick="openDirect()">🔗 Abrir URL Directa</button>
         </div>
         
         <div id="result" class="result"></div>
         
-        <div class="step">
-            <div class="step-number">3</div>
-            <strong>Diagnóstico:</strong>
-            <div>
-                <button class="btn" onclick="checkScriptStatus()">🔍 Ver estado del script</button>
-                <button class="btn" onclick="viewRawData()">📋 Ver datos crudos recibidos</button>
-            </div>
+        <div style="margin-top: 30px; padding: 15px; background: #e8f0fe; border-radius: 5px;">
+            <h3>📋 Pasos para solucionar:</h3>
+            <ol>
+                <li><strong>Copia</strong> el nuevo código del Google Script</li>
+                <li><strong>Pégalo</strong> en tu Google Script (reemplaza todo)</li>
+                <li><strong>Guarda</strong> (Ctrl+S)</li>
+                <li><strong>Haz Deploy</strong> → "Manage deployments" → "New version"</li>
+                <li><strong>Prueba</strong> con los botones de arriba</li>
+            </ol>
         </div>
-        
-        <div id="debugInfo"></div>
     </div>
 
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxEHHmB9cSJ7H5KUyXvy8GZf98pGPnMWZhYT7OdLHjPw4nXxjORyZf7W_8vm_MJU6_mUg/exec';
-        
-        function showResult(type, title, content) {
+        async function testGET() {
+            const url = document.getElementById('scriptUrl').value;
             const resultDiv = document.getElementById('result');
-            resultDiv.className = 'result ' + type;
-            resultDiv.innerHTML = `<h3>${title}</h3><pre>${JSON.stringify(content, null, 2)}</pre>`;
-        }
-        
-        async function getCurrentData() {
+            
+            resultDiv.innerHTML = '<p>🔍 Probando GET request...</p>';
+            
             try {
-                const response = await fetch(SCRIPT_URL);
+                const response = await fetch(url);
                 const data = await response.json();
                 
-                if (data.success) {
-                    showResult('success', '✅ DATOS REALES DEL WEBHOOK', data);
-                } else {
-                    showResult('warning', '⚠️ MODO RESPALDO (sin webhook activo)', data);
-                }
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h3>✅ GET funcionando correctamente</h3>
+                        <p><strong>Estado HTTP:</strong> ${response.status}</p>
+                        <p><strong>URL:</strong> ${url}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+                
+                console.log('GET exitoso:', data);
+                
             } catch (error) {
-                showResult('error', '❌ ERROR DE CONEXIÓN', { error: error.message });
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Error en GET</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <p><strong>Detalles:</strong> ${getErrorDetails(error)}</p>
+                        <p><strong>Solución:</strong> Verifica que el Google Script esté desplegado correctamente.</p>
+                    </div>
+                `;
+                
+                console.error('GET error:', error);
             }
         }
         
-        async function testWithRealTTNData() {
-            // Datos EXACTOS que mostró TTN antes
-            const realTTNData = {
-                "name": "as.up.data.forward",
-                "time": "2026-02-01T11:54:29.881844310Z",
-                "data": {
-                    "@type": "type.googleapis.com/ttn.lorawan.v3.ApplicationUp",
-                    "end_device_ids": {
-                        "device_id": "eui-a84041602187da56",
-                        "application_ids": {"application_id": "nivelgasoil"}
-                    },
-                    "received_at": "2026-02-01T11:54:29.879046049Z",
-                    "uplink_message": {
-                        "frm_payload": "DR0F1gAAAAE=",
-                        "decoded_payload": {
-                            "Bat": 3.357,
-                            "Distance": "1494 mm",
-                            "Interrupt_flag": 0,
-                            "Sensor_flag": 1,
-                            "TempC_DS18B20": "0.00"
-                        }
+        async function testPOST() {
+            const url = document.getElementById('scriptUrl').value;
+            const resultDiv = document.getElementById('result');
+            
+            resultDiv.innerHTML = '<p>🔍 Probando POST request (simulación webhook)...</p>';
+            
+            const testData = {
+                received_at: new Date().toISOString(),
+                uplink_message: {
+                    decoded_payload: {
+                        Bat: 3.45,
+                        Distance: "1525 mm",
+                        TempC_DS18B20: "19.5"
                     }
+                },
+                end_device_ids: {
+                    device_id: "eui-a84041602187da56"
                 }
             };
             
             try {
-                const response = await fetch(SCRIPT_URL, {
+                const response = await fetch(url, {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(realTTNData)
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testData)
                 });
                 
                 const data = await response.json();
-                showResult('info', '🧪 Datos REALES de TTN enviados', data);
                 
-                // Esperar y verificar
-                setTimeout(getCurrentData, 2000);
+                resultDiv.innerHTML = `
+                    <div class="success">
+                        <h3>✅ POST funcionando correctamente</h3>
+                        <p><strong>Estado HTTP:</strong> ${response.status}</p>
+                        <p><strong>Datos enviados:</strong></p>
+                        <pre>${JSON.stringify(testData, null, 2)}</pre>
+                        <p><strong>Respuesta recibida:</strong></p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+                
+                console.log('POST exitoso:', data);
                 
             } catch (error) {
-                showResult('error', '❌ Error enviando datos', { error: error.message });
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Error en POST</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <p>Este error puede ser normal si el script no maneja POST aún.</p>
+                        <p>Primero asegúrate de que GET funciona.</p>
+                    </div>
+                `;
+                
+                console.error('POST error:', error);
             }
         }
         
-        async function testVariousFormats() {
-            // Probar 3 formatos diferentes
-            const formats = [
-                {
-                    name: "Formato 1: decoded_payload directo",
-                    data: {
-                        received_at: new Date().toISOString(),
-                        uplink_message: {
-                            decoded_payload: {
-                                Bat: 3.40,
-                                Distance: "1500 mm",
-                                TempC_DS18B20: "20.0"
-                            }
-                        },
-                        end_device_ids: {
-                            device_id: "eui-a84041602187da56"
-                        }
-                    }
-                },
-                {
-                    name: "Formato 2: estructura anidada",
-                    data: {
-                        message: {
-                            uplink_message: {
-                                received_at: new Date().toISOString(),
-                                decoded_payload: {
-                                    Bat: 3.41,
-                                    Distance: "1510 mm"
-                                }
-                            }
-                        }
-                    }
-                },
-                {
-                    name: "Formato 3: texto plano",
-                    data: {
-                        data: '{"Bat":3.42,"Distance":"1520 mm"}',
-                        timestamp: new Date().toISOString()
-                    }
-                }
-            ];
-            
-            for (let format of formats) {
-                try {
-                    const response = await fetch(SCRIPT_URL, {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify(format.data)
-                    });
-                    
-                    const result = await response.json();
-                    console.log(`${format.name}:`, result);
-                    
-                    if (result.success) {
-                        alert(`${format.name} - ÉXITO: ${result.data.distance}mm`);
-                    }
-                } catch (error) {
-                    console.error(`${format.name} - ERROR:`, error);
-                }
-                await new Promise(resolve => setTimeout(resolve, 1000));
+        function openDirect() {
+            const url = document.getElementById('scriptUrl').value;
+            window.open(url, '_blank');
+        }
+        
+        function getErrorDetails(error) {
+            if (error.message.includes('Failed to fetch')) {
+                return 'CORS bloqueado o URL incorrecta. Prueba abrir la URL directamente.';
             }
-            
-            getCurrentData();
-        }
-        
-        function openTTN() {
-            window.open('https://console.thethingsnetwork.org/applications/nivelgasoil', '_blank');
-        }
-        
-        async function resetData() {
-            if (confirm('¿Seguro que quieres resetear todos los datos?')) {
-                // Podríamos añadir una función de reset en el Google Script
-                alert('Para resetear, actualiza el Google Script o espera a que expire (las Properties duran 90 días)');
+            if (error.message.includes('NetworkError')) {
+                return 'Error de red o URL no accesible.';
             }
+            return error.message;
         }
         
-        async function checkScriptStatus() {
-            try {
-                const response = await fetch(SCRIPT_URL + '?test=status');
-                const data = await response.json();
-                document.getElementById('debugInfo').innerHTML = 
-                    `<div class="result info"><h3>Estado del Script</h3><pre>${JSON.stringify(data, null, 2)}</pre></div>`;
-            } catch (error) {
-                document.getElementById('debugInfo').innerHTML = 
-                    `<div class="result error"><h3>Error</h3><p>${error.message}</p></div>`;
-            }
-        }
-        
-        async function viewRawData() {
-            try {
-                const response = await fetch(SCRIPT_URL + '?raw=true');
-                const data = await response.json();
-                showResult('info', '📋 Datos crudos almacenados', data);
-            } catch (error) {
-                showResult('error', '❌ Error', { error: error.message });
-            }
-        }
-        
-        // Inicializar
+        // Probar GET automáticamente al cargar
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Sistema listo. URL:', SCRIPT_URL);
-            getCurrentData();
+            console.log('Prueba lista');
+            // testGET(); // Descomenta para auto-probar
         });
     </script>
 </body>
