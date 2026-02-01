@@ -3,64 +3,228 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitor Gasoil - Datos Reales TTN</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Monitor Gasoil - Depuración TTN</title>
     <style>
-        :root {
-            --primary: #3498db;
-            --success: #2ecc71;
-            --warning: #f39c12;
-            --danger: #e74c3c;
-            --dark: #2c3e50;
-            --light: #ecf0f1;
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+        body { background: #f0f2f5; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .card { background: white; border-radius: 10px; padding: 25px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; margin-bottom: 20px; }
+        .data-row { display: flex; justify-content: space-between; margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 5px; }
+        .label { font-weight: bold; color: #495057; }
+        .value { color: #212529; }
+        .real { border-left: 5px solid #28a745; }
+        .simulated { border-left: 5px solid #ffc107; }
+        .error { border-left: 5px solid #dc3545; }
+        .btn { background: #007bff; color: white; border: none; padding: 12px 25px; border-radius: 5px; cursor: pointer; margin: 10px 5px; }
+        .btn:hover { background: #0056b3; }
+        .debug { background: #343a40; color: white; padding: 15px; border-radius: 5px; margin-top: 15px; font-family: monospace; font-size: 12px; max-height: 300px; overflow: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Depuración - Conexión TTN</h1>
+        
+        <div class="card" id="statusCard">
+            <h2>Estado de Conexión</h2>
+            <div class="data-row">
+                <span class="label">Google Script:</span>
+                <span class="value" id="scriptStatus">Probando...</span>
+            </div>
+            <div class="data-row">
+                <span class="label">TTN API:</span>
+                <span class="value" id="ttnStatus">--</span>
+            </div>
+            <div class="data-row">
+                <span class="label">Último mensaje:</span>
+                <span class="value" id="lastMessage">--</span>
+            </div>
+        </div>
+        
+        <div class="card" id="dataCard">
+            <h2>Datos del Sensor</h2>
+            <div class="data-row">
+                <span class="label">Distancia:</span>
+                <span class="value" id="distanceValue">-- mm</span>
+            </div>
+            <div class="data-row">
+                <span class="label">Nivel estimado:</span>
+                <span class="value" id="levelValue">-- L (--%)</span>
+            </div>
+            <div class="data-row">
+                <span class="label">Tipo de datos:</span>
+                <span class="value" id="dataType">--</span>
+            </div>
+            <div class="data-row">
+                <span class="label">Timestamp:</span>
+                <span class="value" id="timestamp">--</span>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Acciones</h2>
+            <button class="btn" onclick="testConnection()">🧪 Probar Conexión</button>
+            <button class="btn" onclick="forceRealData()">🔄 Forzar Datos Reales</button>
+            <button class="btn" onclick="showDebug()">🐛 Mostrar Debug</button>
+            <button class="btn" onclick="checkTTNConsole()">📊 Ver TTN Console</button>
+        </div>
+        
+        <div class="card" id="debugCard" style="display: none;">
+            <h2>Información de Depuración</h2>
+            <div class="debug" id="debugInfo">
+                Esperando datos...
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>Pasos para solucionar</h2>
+            <ol style="margin-left: 20px; line-height: 1.8;">
+                <li>Verifica que tu dispositivo haya enviado datos recientemente</li>
+                <li>Comprueba que la API Key tenga permisos de lectura</li>
+                <li>Asegúrate de que la aplicación TTN existe: <strong>nivelgasoil</strong></li>
+                <li>Prueba el endpoint TTN directamente:
+                    <pre style="background: #f8f9fa; padding: 10px; margin: 10px 0;">
+curl -X GET \
+  "https://nivelgasoil.data.thethingsnetwork.org/api/v2/query?last=1" \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer NNSXS.LXJ4TZ5ZAWDWSQKGPVPSP2D37D25HZUJNXF5LFI.47QEBD5K6AG3PS2XRYISFDW2EMZALI3ZFZP5XLB3LFVKYRUK2O2A"</pre>
+                </li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwvNKLCzrhwAqUU3GRgEUdrVQNYp2iy-Dn5SAZ5QMCkHhRTwUK52bcOuU-xUXKS0VtTRg/exec';
+        
+        async function testConnection() {
+            updateStatus('scriptStatus', '🔄 Conectando...', 'info');
+            
+            try {
+                const response = await fetch(SCRIPT_URL);
+                const data = await response.json();
+                
+                console.log('Respuesta completa:', data);
+                
+                // Mostrar información de depuración
+                document.getElementById('debugInfo').textContent = 
+                    JSON.stringify(data, null, 2);
+                
+                // Actualizar estados
+                if (data.result && data.result.success) {
+                    updateStatus('scriptStatus', '✅ Conexión exitosa', 'success');
+                    updateStatus('ttnStatus', '✅ Conectado a TTN', 'success');
+                    
+                    // Mostrar datos
+                    const result = data.result;
+                    document.getElementById('distanceValue').textContent = 
+                        `${result.distance} mm`;
+                    document.getElementById('timestamp').textContent = 
+                        new Date(result.timestamp).toLocaleString('es-ES');
+                    document.getElementById('dataType').textContent = 'REAL';
+                    document.getElementById('dataType').style.color = '#28a745';
+                    
+                    // Calcular nivel
+                    updateLevel(result.distance);
+                    
+                    // Actualizar tarjeta
+                    document.getElementById('dataCard').className = 'card real';
+                    
+                } else if (data.result) {
+                    updateStatus('scriptStatus', '⚠️ Script funciona, pero TTN falla', 'warning');
+                    updateStatus('ttnStatus', `❌ ${data.result.error || 'Error TTN'}`, 'error');
+                    
+                    // Mostrar datos simulados
+                    document.getElementById('distanceValue').textContent = 
+                        `${data.result.distance} mm (SIMULADO)`;
+                    document.getElementById('timestamp').textContent = 
+                        new Date().toLocaleString('es-ES');
+                    document.getElementById('dataType').textContent = 'SIMULADO';
+                    document.getElementById('dataType').style.color = '#ffc107';
+                    
+                    // Calcular nivel
+                    updateLevel(data.result.distance);
+                    
+                    // Actualizar tarjeta
+                    document.getElementById('dataCard').className = 'card simulated';
+                    
+                    // Mostrar debug si existe
+                    if (data.result.debug) {
+                        console.log('Debug info:', data.result.debug);
+                    }
+                }
+                
+            } catch (error) {
+                updateStatus('scriptStatus', `❌ Error: ${error.message}`, 'error');
+                console.error('Error completo:', error);
+            }
         }
         
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        function updateLevel(distance) {
+            const DIST_LLENO = 120;
+            const DIST_VACIO = 1900;
+            const VOL_MAX = 1100;
+            
+            let litros = VOL_MAX * (DIST_VACIO - distance) / (DIST_VACIO - DIST_LLENO);
+            if (litros < 0) litros = 0;
+            if (litros > VOL_MAX) litros = VOL_MAX;
+            
+            const porcentaje = Math.round((litros / VOL_MAX) * 100);
+            document.getElementById('levelValue').textContent = 
+                `${Math.round(litros)} L (${porcentaje}%)`;
+            
+            // Color según nivel
+            if (porcentaje > 60) {
+                document.getElementById('levelValue').style.color = '#28a745';
+            } else if (porcentaje > 20) {
+                document.getElementById('levelValue').style.color = '#ffc107';
+            } else {
+                document.getElementById('levelValue').style.color = '#dc3545';
+            }
         }
         
-        body {
-            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
+        function updateStatus(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            
+            if (type === 'success') {
+                element.style.color = '#28a745';
+            } else if (type === 'warning') {
+                element.style.color = '#ffc107';
+            } else if (type === 'error') {
+                element.style.color = '#dc3545';
+            } else {
+                element.style.color = '#6c757d';
+            }
         }
         
-        .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-            padding: 40px;
-            max-width: 800px;
-            width: 100%;
-            animation: fadeIn 0.5s ease-out;
+        function forceRealData() {
+            // Esto forzaría una nueva lectura del dispositivo
+            alert('Para forzar datos reales, necesitas que tu dispositivo LoRaWAN envíe un nuevo mensaje.');
         }
         
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        function showDebug() {
+            const debugCard = document.getElementById('debugCard');
+            debugCard.style.display = debugCard.style.display === 'none' ? 'block' : 'none';
         }
         
-        header {
-            text-align: center;
-            margin-bottom: 30px;
+        function checkTTNConsole() {
+            window.open('https://console.thethingsnetwork.org/applications/nivelgasoil', '_blank');
         }
         
-        h1 {
-            color: var(--dark);
-            margin-bottom: 10px;
-            font-size: 2.2em;
-        }
-        
-        .subtitle {
-            color: #7f8c8d;
-            font-size: 1.1em;
-        }
+        // Inicializar
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Herramienta de depuración iniciada');
+            console.log('Script URL:', SCRIPT_URL);
+            
+            // Probar conexión automáticamente
+            testConnection();
+            
+            // Auto-actualizar cada 30 segundos
+            setInterval(testConnection, 30000);
+        });
+    </script>
+</body>
+</html>        }
         
         .status-badge {
             display: inline-flex;
@@ -518,3 +682,4 @@
     </script>
 </body>
 </html>
+
