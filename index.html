@@ -2,166 +2,213 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Monitor Gasoil - API TTN v3</title>
+    <title>Monitor Gasoil - FUNCIONANDO</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: Arial; padding: 20px; background: #0d1117; color: white; }
-        .container { max-width: 500px; margin: 0 auto; background: #161b22; padding: 30px; border-radius: 15px; border: 1px solid #30363d; }
-        h1 { color: #58a6ff; text-align: center; margin-bottom: 30px; }
-        .display { background: #0d1117; color: #7ee787; font-size: 72px; text-align: center; padding: 40px; margin: 20px 0; border-radius: 10px; border: 1px solid #30363d; font-family: 'Courier New', monospace; }
-        .info { background: #21262d; padding: 20px; border-radius: 10px; margin: 15px 0; border: 1px solid #30363d; }
-        .btn { background: #238636; color: white; padding: 15px; width: 100%; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; margin: 10px 0; font-weight: bold; }
-        .btn:hover { background: #2ea043; }
-        .btn-secondary { background: #21262d; border: 1px solid #30363d; }
-        .btn-secondary:hover { background: #30363d; }
-        .status { padding: 12px; border-radius: 6px; text-align: center; margin: 15px 0; border: 1px solid; }
-        .online { background: #13233a; color: #58a6ff; border-color: #1f6feb; }
-        .offline { background: #3d1d28; color: #f85149; border-color: #da3633; }
-        .loading { background: #2d2d2d; color: #e3b341; border-color: #e3b341; }
+        :root {
+            --primary: #2563eb;
+            --success: #16a34a;
+            --warning: #ea580c;
+            --danger: #dc2626;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: white; min-height: 100vh; padding: 20px; }
+        .container { max-width: 500px; margin: 0 auto; }
+        .card { background: rgba(30, 41, 59, 0.8); backdrop-filter: blur(10px); border-radius: 20px; padding: 30px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+        h1 { text-align: center; margin-bottom: 10px; font-size: 28px; background: linear-gradient(90deg, #60a5fa, #34d399); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .subtitle { text-align: center; color: #94a3b8; margin-bottom: 30px; }
+        .distance-display { text-align: center; margin: 40px 0; }
+        .distance-value { font-size: 100px; font-weight: 800; background: linear-gradient(90deg, #60a5fa, #34d399); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1; }
+        .distance-unit { font-size: 24px; color: #94a3b8; margin-left: 10px; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 30px 0; }
+        .info-item { background: rgba(15, 23, 42, 0.7); padding: 20px; border-radius: 12px; border-left: 4px solid var(--primary); }
+        .info-label { font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .info-value { font-size: 24px; font-weight: 700; }
+        .btn { display: block; width: 100%; padding: 18px; border: none; border-radius: 12px; font-size: 18px; font-weight: 600; cursor: pointer; transition: all 0.3s; margin: 10px 0; }
+        .btn-primary { background: linear-gradient(90deg, #3b82f6, #2563eb); color: white; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3); }
+        .btn-secondary { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); }
+        .btn-secondary:hover { background: rgba(255,255,255,0.2); }
+        .status { padding: 15px; border-radius: 10px; text-align: center; margin: 20px 0; font-weight: 600; }
+        .status-success { background: rgba(22, 163, 74, 0.2); border: 1px solid rgba(22, 163, 74, 0.4); color: #4ade80; }
+        .status-warning { background: rgba(234, 88, 12, 0.2); border: 1px solid rgba(234, 88, 12, 0.4); color: #fb923c; }
+        .status-error { background: rgba(220, 38, 38, 0.2); border: 1px solid rgba(220, 38, 38, 0.4); color: #f87171; }
+        .last-update { text-align: center; color: #64748b; font-size: 14px; margin-top: 20px; }
+        @media (max-width: 600px) {
+            .distance-value { font-size: 80px; }
+            .info-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🛢️ MONITOR GASOIL</h1>
-        
-        <div id="status" class="status loading">
-            🔄 Iniciando...
-        </div>
-        
-        <div class="display">
-            <span id="distance">--</span><span style="font-size: 24px;"> mm</span>
-        </div>
-        
-        <div class="info">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                <span>📊 Nivel:</span>
-                <span id="level" style="color: #7ee787;">-- L (--%)</span>
+        <div class="card">
+            <h1>🛢️ MONITOR GASOIL</h1>
+            <p class="subtitle">Datos en tiempo real • TTN API v3</p>
+            
+            <div id="status" class="status status-warning">
+                🔄 Conectando a TTN...
             </div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                <span>🔋 Batería:</span>
-                <span id="battery" style="color: #58a6ff;">-- V</span>
+            
+            <div class="distance-display">
+                <div class="distance-value">
+                    <span id="distance">--</span><span class="distance-unit">mm</span>
+                </div>
+                <div style="color: #94a3b8; margin-top: 10px;">Distancia del sensor</div>
             </div>
-            <div style="display: flex; justify-content: space-between;">
-                <span>⏰ Actualizado:</span>
-                <span id="time" style="color: #e3b341;">--:--:--</span>
+            
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Nivel Estimado</div>
+                    <div class="info-value" id="level">--%</div>
+                    <div style="font-size: 14px; color: #94a3b8;" id="liters">-- L</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Batería</div>
+                    <div class="info-value" id="battery">-- V</div>
+                    <div style="font-size: 14px; color: #94a3b8;">Sensor LDDS75</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Última Lectura</div>
+                    <div class="info-value" id="time">--:--</div>
+                    <div style="font-size: 14px; color: #94a3b8;" id="date">--/--/----</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Estado</div>
+                    <div class="info-value" id="source">--</div>
+                    <div style="font-size: 14px; color: #94a3b8;" id="device">Dispositivo</div>
+                </div>
             </div>
-        </div>
-        
-        <button class="btn" onclick="updateData()" id="updateBtn">
-            🔄 Actualizar Datos
-        </button>
-        
-        <button class="btn btn-secondary" onclick="forceFetch()">
-            ⚡ Consultar TTN API
-        </button>
-        
-        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #30363d; text-align: center; font-size: 12px; color: #8b949e;">
-            <p>API TTN v3 • Aplicación: nivelgasoil</p>
-            <p id="sourceInfo" style="color: #e3b341;">Conectando...</p>
+            
+            <button class="btn btn-primary" onclick="updateData()" id="updateBtn">
+                🔄 Actualizar Datos
+            </button>
+            
+            <button class="btn btn-secondary" onclick="forceFetchFromTTN()">
+                ⚡ Consultar TTN API
+            </button>
+            
+            <div class="last-update" id="lastUpdate">
+                Cargando...
+            </div>
         </div>
     </div>
 
     <script>
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxEHHmB9cSJ7H5KUyXvy8GZf98pGPnMWZhYT7OdLHjPw4nXxjORyZf7W_8vm_MJU6_mUg/exec';
+        const SIMPLE_URL = SCRIPT_URL + '?format=simple';
         
-        // Configuración del tanque
-        const TANK = {
-            full: 120,    // mm cuando está lleno (1100L)
-            empty: 1900,  // mm cuando está vacío (0L)
-            capacity: 1100 // litros totales
-        };
+        let lastData = null;
+        let lastUpdateTime = null;
         
-        async function updateData() {
+        async function updateData(showLoading = true) {
             const btn = document.getElementById('updateBtn');
             const originalText = btn.innerHTML;
-            btn.innerHTML = '🔄 Actualizando...';
-            btn.disabled = true;
             
-            setStatus('loading', '🔄 Actualizando datos...');
+            if (showLoading) {
+                btn.innerHTML = '🔄 Actualizando...';
+                btn.disabled = true;
+                setStatus('warning', '🔄 Actualizando datos...');
+            }
             
             try {
-                const response = await fetch(SCRIPT_URL);
+                const response = await fetch(SIMPLE_URL);
                 const data = await response.json();
+                
+                lastData = data;
+                lastUpdateTime = new Date();
                 
                 updateDisplay(data);
                 
-                if (data.success) {
-                    setStatus('online', '✅ Datos reales de TTN API v3');
+                if (data.is_real) {
+                    setStatus('success', '✅ Datos reales de TTN API');
                 } else {
-                    setStatus('offline', '⚠️ Modo simulado - Usa "Consultar TTN API"');
+                    setStatus('warning', '⚠️ Modo simulado - Presiona "Consultar TTN API"');
                 }
                 
+                updateLastUpdateText();
+                
             } catch (error) {
-                setStatus('offline', '❌ Error de conexión');
+                setStatus('error', '❌ Error de conexión');
                 console.error('Error:', error);
             } finally {
-                btn.innerHTML = originalText;
-                btn.disabled = false;
+                if (showLoading) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
             }
         }
         
-        async function forceFetch() {
-            setStatus('loading', '⚡ Consultando API TTN...');
+        async function forceFetchFromTTN() {
+            setStatus('warning', '⚡ Consultando TTN API...');
             
             try {
                 const response = await fetch(SCRIPT_URL + '?force=fetch');
                 const data = await response.json();
                 
                 if (data.success) {
+                    setStatus('success', '✅ Datos obtenidos de TTN');
                     alert(`✅ ${data.message}\n\nDistancia: ${data.data.distance} mm\nBatería: ${data.data.battery} V`);
-                    updateDisplay(data);
-                    setStatus('online', '✅ Datos obtenidos de TTN API');
+                    
+                    // Actualizar display
+                    setTimeout(() => updateData(false), 1000);
                 } else {
+                    setStatus('error', '❌ Error obteniendo datos');
                     alert(`⚠️ ${data.message || data.error}`);
-                    setStatus('offline', '⚠️ No se pudieron obtener datos');
                 }
                 
             } catch (error) {
+                setStatus('error', '❌ Error de conexión');
                 alert('❌ Error: ' + error.message);
-                setStatus('offline', '❌ Error de conexión');
             }
         }
         
         function updateDisplay(data) {
-            // Actualizar distancia
-            document.getElementById('distance').textContent = data.data.distance;
+            // Distancia
+            document.getElementById('distance').textContent = data.distance;
             
-            // Calcular y mostrar nivel
-            const level = calculateLevel(data.data.distance);
-            document.getElementById('level').textContent = `${level.liters} L (${level.percent}%)`;
+            // Nivel calculado
+            const level = calculateLevel(data.distance);
+            document.getElementById('level').textContent = level.percent + '%';
             document.getElementById('level').style.color = getLevelColor(level.percent);
+            document.getElementById('liters').textContent = level.liters + ' L';
             
-            // Mostrar batería
-            document.getElementById('battery').textContent = data.data.battery.toFixed(2) + ' V';
+            // Batería
+            document.getElementById('battery').textContent = data.battery.toFixed(2) + ' V';
+            document.getElementById('battery').style.color = getBatteryColor(data.battery);
             
-            // Mostrar tiempo
-            document.getElementById('time').textContent = formatTime(data.data.timestamp);
+            // Tiempo
+            const timeInfo = formatDateTime(data.timestamp);
+            document.getElementById('time').textContent = timeInfo.time;
+            document.getElementById('date').textContent = timeInfo.date;
             
-            // Mostrar fuente
-            const sourceEl = document.getElementById('sourceInfo');
-            if (data.data.is_real) {
-                sourceEl.textContent = '✅ Datos reales de TTN';
-                sourceEl.style.color = '#7ee787';
-            } else {
-                sourceEl.textContent = '⚠️ Modo simulado - Presiona "Consultar TTN API"';
-                sourceEl.style.color = '#e3b341';
-            }
+            // Estado
+            document.getElementById('source').textContent = data.is_real ? 'ONLINE' : 'SIMULADO';
+            document.getElementById('source').style.color = data.is_real ? '#4ade80' : '#fb923c';
+            document.getElementById('device').textContent = data.is_real ? 'TTN API v3' : 'Modo local';
             
-            // Log para depuración
             console.log('Display actualizado:', data);
         }
         
         function setStatus(type, message) {
             const statusEl = document.getElementById('status');
-            statusEl.className = 'status ' + type;
+            statusEl.className = 'status status-' + type;
             statusEl.innerHTML = message;
         }
         
         function calculateLevel(distance) {
+            const TANK = {
+                full: 120,    // mm cuando está lleno (1100L)
+                empty: 1900,  // mm cuando está vacío (0L)
+                capacity: 1100 // litros totales
+            };
+            
             let liters = TANK.capacity * (TANK.empty - distance) / (TANK.empty - TANK.full);
             if (liters < 0) liters = 0;
             if (liters > TANK.capacity) liters = TANK.capacity;
             
             const percent = Math.round((liters / TANK.capacity) * 100);
+            
             return {
                 liters: Math.round(liters),
                 percent: percent
@@ -169,40 +216,78 @@
         }
         
         function getLevelColor(percent) {
-            if (percent >= 60) return '#7ee787'; // Verde
-            if (percent >= 20) return '#e3b341'; // Amarillo
-            return '#f85149'; // Rojo
+            if (percent >= 60) return '#4ade80'; // Verde
+            if (percent >= 20) return '#fbbf24'; // Amarillo
+            return '#f87171'; // Rojo
         }
         
-        function formatTime(timestamp) {
-            if (!timestamp || timestamp === 'never') return '--:--:--';
+        function getBatteryColor(voltage) {
+            if (voltage >= 3.6) return '#4ade80'; // Bueno
+            if (voltage >= 3.3) return '#fbbf24'; // Medio
+            return '#f87171'; // Bajo
+        }
+        
+        function formatDateTime(timestamp) {
+            if (!timestamp) return { time: '--:--', date: '--/--/----' };
+            
             try {
                 const date = new Date(timestamp);
-                return date.toLocaleTimeString('es-ES', { 
-                    hour: '2-digit', 
-                    minute: '2-digit',
-                    second: '2-digit'
-                });
+                return {
+                    time: date.toLocaleTimeString('es-ES', { 
+                        hour: '2-digit', 
+                        minute: '2-digit'
+                    }),
+                    date: date.toLocaleDateString('es-ES')
+                };
             } catch (e) {
-                return timestamp.substring(11, 19); // Extraer HH:MM:SS
+                return {
+                    time: timestamp.substring(11, 16) || '--:--',
+                    date: timestamp.substring(0, 10) || '--/--/----'
+                };
             }
+        }
+        
+        function updateLastUpdateText() {
+            if (!lastUpdateTime) return;
+            
+            const now = new Date();
+            const diffMs = now - lastUpdateTime;
+            const diffSec = Math.floor(diffMs / 1000);
+            const diffMin = Math.floor(diffSec / 60);
+            
+            let text = 'Actualizado ahora';
+            
+            if (diffSec > 0) {
+                if (diffSec < 60) {
+                    text = `Actualizado hace ${diffSec} segundos`;
+                } else if (diffMin < 60) {
+                    text = `Actualizado hace ${diffMin} minuto${diffMin > 1 ? 's' : ''}`;
+                } else {
+                    const hours = Math.floor(diffMin / 60);
+                    text = `Actualizado hace ${hours} hora${hours > 1 ? 's' : ''}`;
+                }
+            }
+            
+            if (lastData && !lastData.is_real) {
+                text += ' • Modo simulado';
+            }
+            
+            document.getElementById('lastUpdate').textContent = text;
         }
         
         // Inicializar
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Monitor Gasoil iniciado');
-            console.log('URL del script:', SCRIPT_URL);
+            console.log('URLs:', { SCRIPT_URL, SIMPLE_URL });
             
             // Actualizar inmediatamente
             updateData();
             
-            // Auto-actualizar cada 60 segundos
-            setInterval(updateData, 60000);
+            // Auto-actualizar cada 30 segundos
+            setInterval(updateData, 30000);
             
-            // Mostrar notificación de inicio
-            if ('Notification' in window && Notification.permission === 'default') {
-                Notification.requestPermission();
-            }
+            // Actualizar contador cada segundo
+            setInterval(updateLastUpdateText, 1000);
         });
     </script>
 </body>
