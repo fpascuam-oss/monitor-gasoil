@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitor de Nivel Gasoil - GitHub Pages</title>
+    <title>Monitor Gasoil - Datos Reales TTN</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
@@ -26,100 +26,137 @@
             background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
             min-height: 100vh;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
             padding: 20px;
         }
         
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
         header {
             text-align: center;
-            color: white;
             margin-bottom: 30px;
-            max-width: 800px;
         }
         
         h1 {
-            font-size: 2.5em;
+            color: var(--dark);
             margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-size: 2.2em;
         }
         
         .subtitle {
-            font-size: 1.2em;
-            opacity: 0.9;
+            color: #7f8c8d;
+            font-size: 1.1em;
         }
         
-        .container {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-            max-width: 800px;
-            width: 100%;
-            margin-bottom: 30px;
-        }
-        
-        .status-bar {
-            display: flex;
-            justify-content: space-between;
+        .status-badge {
+            display: inline-flex;
             align-items: center;
-            background: var(--light);
-            padding: 15px 20px;
-            border-radius: 10px;
-            margin-bottom: 30px;
-        }
-        
-        .status-item {
-            text-align: center;
-        }
-        
-        .status-label {
-            font-size: 0.9em;
-            color: var(--dark);
-            opacity: 0.7;
-        }
-        
-        .status-value {
-            font-size: 1.4em;
+            gap: 10px;
+            padding: 10px 20px;
+            border-radius: 50px;
             font-weight: bold;
-            color: var(--dark);
+            margin-bottom: 20px;
+        }
+        
+        .status-connected {
+            background: rgba(46, 204, 113, 0.1);
+            color: var(--success);
+            border: 2px solid var(--success);
+        }
+        
+        .status-simulated {
+            background: rgba(243, 156, 18, 0.1);
+            color: var(--warning);
+            border: 2px solid var(--warning);
+        }
+        
+        .status-error {
+            background: rgba(231, 76, 60, 0.1);
+            color: var(--danger);
+            border: 2px solid var(--danger);
         }
         
         .main-display {
             text-align: center;
-            margin: 40px 0;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            color: white;
+            margin: 30px 0;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
         
         .distance-value {
             font-size: 100px;
             font-weight: bold;
-            color: var(--primary);
             line-height: 1;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.2);
         }
         
         .unit {
             font-size: 30px;
-            color: var(--dark);
             margin-left: 10px;
+            opacity: 0.9;
         }
         
         .distance-label {
             font-size: 1.2em;
-            color: var(--dark);
-            margin-top: 10px;
+            margin-top: 15px;
+            opacity: 0.9;
             text-transform: uppercase;
             letter-spacing: 2px;
         }
         
-        .controls {
-            display: flex;
-            justify-content: center;
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 20px;
             margin: 30px 0;
         }
         
+        .info-card {
+            background: var(--light);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid var(--primary);
+        }
+        
+        .info-label {
+            font-size: 0.9em;
+            color: var(--dark);
+            opacity: 0.7;
+            margin-bottom: 8px;
+        }
+        
+        .info-value {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: var(--dark);
+        }
+        
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin: 30px 0;
+        }
+        
         .btn {
-            padding: 15px 30px;
+            flex: 1;
+            padding: 18px;
             border: none;
             border-radius: 10px;
             font-size: 1.1em;
@@ -128,6 +165,7 @@
             transition: all 0.3s;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 10px;
         }
         
@@ -139,6 +177,7 @@
         .btn-primary:hover {
             background: #2980b9;
             transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
         
         .btn-secondary {
@@ -150,72 +189,45 @@
             background: #d5dbdb;
         }
         
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-top: 40px;
-        }
-        
-        .info-card {
-            background: var(--light);
+        .loading {
+            display: none;
+            text-align: center;
             padding: 20px;
-            border-radius: 10px;
-            border-left: 5px solid var(--primary);
-        }
-        
-        .info-title {
-            font-size: 1em;
-            color: var(--dark);
-            opacity: 0.7;
-            margin-bottom: 10px;
-        }
-        
-        .info-content {
-            font-size: 1.4em;
-            font-weight: bold;
             color: var(--dark);
         }
         
-        .alert {
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+        
+        .backend-info {
+            background: #f8f9fa;
             padding: 15px;
             border-radius: 10px;
-            margin: 20px 0;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .alert-warning {
-            background: #fff3cd;
-            border-left: 5px solid var(--warning);
-            color: #856404;
-        }
-        
-        .alert-info {
-            background: #d1ecf1;
-            border-left: 5px solid var(--primary);
-            color: #0c5460;
-        }
-        
-        footer {
-            text-align: center;
-            color: white;
-            margin-top: 20px;
-            opacity: 0.8;
-        }
-        
-        .github-link {
-            color: white;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 10px;
-        }
-        
-        .github-link:hover {
-            text-decoration: underline;
+            margin-top: 15px;
+            font-family: monospace;
+            font-size: 0.8em;
+            word-break: break-all;
         }
         
         @media (max-width: 768px) {
@@ -231,213 +243,277 @@
                 flex-direction: column;
             }
             
-            .status-bar {
-                flex-direction: column;
-                gap: 15px;
+            .info-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 <body>
-    <header>
-        <h1><i class="fas fa-oil-can"></i> Monitor de Nivel Gasoil</h1>
-        <p class="subtitle">Sistema de monitoreo remoto vía TTN • GitHub Pages</p>
-    </header>
-    
     <div class="container">
-        <div class="status-bar">
-            <div class="status-item">
-                <div class="status-label">ESTADO</div>
-                <div class="status-value" id="status">CONECTADO</div>
-            </div>
-            <div class="status-item">
-                <div class="status-label">MODO</div>
-                <div class="status-value" id="mode">SIMULACIÓN</div>
-            </div>
-            <div class="status-item">
-                <div class="status-label">LECTURAS</div>
-                <div class="status-value" id="readings">0</div>
-            </div>
-        </div>
+        <header>
+            <h1><i class="fas fa-oil-can"></i> Monitor de Nivel Gasoil</h1>
+            <p class="subtitle">Datos en tiempo real desde TTN vía Google Apps Script</p>
+        </header>
         
-        <div class="alert alert-info">
-            <i class="fas fa-info-circle"></i>
-            <div>
-                <strong>Modo simulación activo</strong><br>
-                Para datos reales de TTN, configura un webhook en tu aplicación.
-            </div>
+        <div id="statusBadge" class="status-badge status-connected">
+            <i class="fas fa-circle"></i>
+            <span id="statusText">Conectando a TTN...</span>
         </div>
         
         <div class="main-display">
             <div class="distance-value">
-                <span id="distance">256</span>
+                <span id="distanceValue">--</span>
                 <span class="unit">mm</span>
             </div>
-            <div class="distance-label">Distancia sensor a superficie</div>
+            <div class="distance-label">Distancia del sensor</div>
         </div>
         
-        <div class="controls">
-            <button class="btn btn-primary" onclick="getNewReading()">
-                <i class="fas fa-sync-alt"></i> Nueva Lectura
-            </button>
-            <button class="btn btn-secondary" onclick="toggleMode()">
-                <i class="fas fa-cog"></i> Cambiar Modo
-            </button>
+        <div class="loading" id="loading">
+            <div class="loading-spinner"></div>
+            <p>Obteniendo datos de TTN...</p>
         </div>
         
         <div class="info-grid">
             <div class="info-card">
-                <div class="info-title">APLICACIÓN TTN</div>
-                <div class="info-content">nivelgasoil</div>
+                <div class="info-label">Aplicación TTN</div>
+                <div class="info-value">nivelgasoil</div>
             </div>
+            
             <div class="info-card">
-                <div class="info-title">ÚLTIMA ACTUALIZACIÓN</div>
-                <div class="info-content" id="timestamp">--:--:--</div>
+                <div class="info-label">Última Actualización</div>
+                <div class="info-value" id="timestamp">--:--:--</div>
             </div>
+            
             <div class="info-card">
-                <div class="info-title">NIVEL ESTIMADO</div>
-                <div class="info-content" id="level">--</div>
+                <div class="info-label">Tipo de Datos</div>
+                <div class="info-value" id="dataType">--</div>
             </div>
+            
             <div class="info-card">
-                <div class="info-title">BATERÍA</div>
-                <div class="info-content" id="battery">--</div>
+                <div class="info-label">Nivel Estimado</div>
+                <div class="info-value" id="levelEstimate">--</div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn btn-primary" onclick="fetchData()" id="fetchBtn">
+                <i class="fas fa-sync-alt"></i> Obtener Datos Reales
+            </button>
+            <button class="btn btn-secondary" onclick="showRawData()">
+                <i class="fas fa-code"></i> Ver Datos Crudos
+            </button>
+        </div>
+        
+        <div class="footer">
+            <p>Sistema conectado a Google Apps Script + TTN</p>
+            <div class="backend-info" id="backendUrl">
+                Endpoint: https://script.google.com/macros/s/AKfycbwvNKLCzrhwAqUU3GRgEUdrVQNYp2iy-Dn5SAZ5QMCkHhRTwUK52bcOuU-xUXKS0VtTRg/exec
             </div>
         </div>
     </div>
-    
-    <footer>
-        <p>Sistema de monitoreo • Despliegue automático con GitHub Pages</p>
-        <a href="https://github.com/TU-USUARIO/monitor-gasoil" class="github-link" target="_blank">
-            <i class="fab fa-github"></i> Ver código en GitHub
-        </a>
-    </footer>
 
     <script>
         // Configuración
-        let readings = 0;
-        let simulationMode = true;
-        const distances = [256, 300, 450, 600, 750, 900, 1200, 1500, 1800];
-        let currentIndex = 0;
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwvNKLCzrhwAqUU3GRgEUdrVQNYp2iy-Dn5SAZ5QMCkHhRTwUK52bcOuU-xUXKS0VtTRg/exec';
+        let updateInterval;
+        let isRealData = false;
+        let updateCount = 0;
         
-        // Función para actualizar la pantalla
-        function updateDisplay(distance) {
-            // Actualizar distancia
-            document.getElementById('distance').textContent = distance;
-            readings++;
-            document.getElementById('readings').textContent = readings;
+        // Función para obtener datos del Google Script
+        async function fetchData() {
+            // Mostrar loading
+            showLoading(true);
             
-            // Actualizar timestamp
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('es-ES', { 
-                hour: '2-digit', 
+            // Deshabilitar botón temporalmente
+            const btn = document.getElementById('fetchBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Conectando...';
+            
+            try {
+                console.log('Conectando a Google Apps Script...');
+                
+                // Hacer la petición al script
+                const response = await fetch(GOOGLE_SCRIPT_URL);
+                
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('Datos recibidos:', data);
+                
+                // Procesar respuesta
+                if (data.success) {
+                    // Datos reales de TTN
+                    isRealData = true;
+                    updateDisplay(
+                        data.distance, 
+                        data.timestamp, 
+                        true,
+                        data.raw || ''
+                    );
+                    updateStatus('connected', '✅ Datos reales de TTN');
+                    
+                } else if (data.simulated) {
+                    // Datos simulados (fallback)
+                    isRealData = false;
+                    updateDisplay(
+                        data.distance, 
+                        data.timestamp || new Date().toISOString(), 
+                        false,
+                        ''
+                    );
+                    updateStatus('simulated', '⚠️ Modo simulación activado');
+                    
+                } else {
+                    throw new Error(data.error || 'Formato de datos desconocido');
+                }
+                
+                updateCount++;
+                
+            } catch (error) {
+                console.error('Error al obtener datos:', error);
+                
+                // Usar datos completamente simulados
+                useFallbackData();
+                updateStatus('error', '❌ Error de conexión - Modo simulación');
+                
+            } finally {
+                // Ocultar loading y restaurar botón
+                showLoading(false);
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sync-alt"></i> Actualizar Datos';
+                
+                // Cambiar texto temporalmente
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="fas fa-sync-alt"></i> Obtener Datos Reales';
+                }, 2000);
+            }
+        }
+        
+        // Función para actualizar la visualización
+        function updateDisplay(distance, timestamp, isReal, rawData) {
+            // Formatear distancia
+            document.getElementById('distanceValue').textContent = distance;
+            
+            // Formatear timestamp
+            const dateObj = new Date(timestamp);
+            const timeString = dateObj.toLocaleTimeString('es-ES', {
+                hour: '2-digit',
                 minute: '2-digit',
                 second: '2-digit'
             });
-            document.getElementById('timestamp').textContent = timeString;
+            const dateString = dateObj.toLocaleDateString('es-ES');
             
-            // Calcular nivel estimado (ejemplo)
-            const level = Math.max(0, Math.min(100, Math.round(100 * (1900 - distance) / (1900 - 120))));
-            document.getElementById('level').textContent = `${level}%`;
+            document.getElementById('timestamp').textContent = `${timeString}`;
             
-            // Actualizar batería (simulada)
-            const battery = 85 + Math.floor(Math.random() * 15);
-            document.getElementById('battery').textContent = `${battery}%`;
-            
-            // Actualizar estado según distancia
-            const statusElement = document.getElementById('status');
-            if (distance < 500) {
-                statusElement.textContent = "ALTO";
-                statusElement.style.color = "var(--success)";
-            } else if (distance < 1200) {
-                statusElement.textContent = "MEDIO";
-                statusElement.style.color = "var(--warning)";
+            // Actualizar tipo de datos
+            const dataTypeElement = document.getElementById('dataType');
+            if (isReal) {
+                dataTypeElement.textContent = 'REAL';
+                dataTypeElement.style.color = 'var(--success)';
             } else {
-                statusElement.textContent = "BAJO";
-                statusElement.style.color = "var(--danger)";
+                dataTypeElement.textContent = 'SIMULADO';
+                dataTypeElement.style.color = 'var(--warning)';
             }
             
-            // Log para depuración
-            console.log(`Lectura #${readings}: ${distance}mm | Nivel: ${level}%`);
-        }
-        
-        // Función para obtener nueva lectura
-        function getNewReading() {
-            if (simulationMode) {
-                // Modo simulación: usar datos predefinidos
-                currentIndex = (currentIndex + 1) % distances.length;
-                const distance = distances[currentIndex];
-                updateDisplay(distance);
+            // Calcular nivel estimado (basado en tu configuración)
+            const DIST_LLENO = 120;
+            const DIST_VACIO = 1900;
+            const VOL_MAX = 1100;
+            
+            let litros = VOL_MAX * (DIST_VACIO - distance) / (DIST_VACIO - DIST_LLENO);
+            if (litros < 0) litros = 0;
+            if (litros > VOL_MAX) litros = VOL_MAX;
+            
+            const porcentaje = Math.round((litros / VOL_MAX) * 100);
+            document.getElementById('levelEstimate').textContent = `${Math.round(litros)}L (${porcentaje}%)`;
+            
+            // Cambiar color del nivel estimado según porcentaje
+            if (porcentaje > 60) {
+                document.getElementById('levelEstimate').style.color = 'var(--success)';
+            } else if (porcentaje > 20) {
+                document.getElementById('levelEstimate').style.color = 'var(--warning)';
             } else {
-                // Modo real: conectar a TTN
-                connectToTTN();
+                document.getElementById('levelEstimate').style.color = 'var(--danger)';
             }
             
-            // Efecto visual en el botón
-            const btn = document.querySelector('.btn-primary');
-            btn.innerHTML = '<i class="fas fa-check"></i> Actualizado';
-            setTimeout(() => {
-                btn.innerHTML = '<i class="fas fa-sync-alt"></i> Nueva Lectura';
-            }, 1000);
+            // Mostrar en consola para depuración
+            console.log(`Distancia: ${distance}mm | Nivel: ${Math.round(litros)}L (${porcentaje}%) | Tipo: ${isReal ? 'Real' : 'Simulado'}`);
         }
         
-        // Función para cambiar modo
-        function toggleMode() {
-            simulationMode = !simulationMode;
-            const modeElement = document.getElementById('mode');
-            const alertElement = document.querySelector('.alert');
+        // Función para datos de fallback (simulados)
+        function useFallbackData() {
+            isRealData = false;
             
-            if (simulationMode) {
-                modeElement.textContent = "SIMULACIÓN";
-                modeElement.style.color = "var(--warning)";
-                alertElement.innerHTML = `
-                    <i class="fas fa-info-circle"></i>
-                    <div>
-                        <strong>Modo simulación activo</strong><br>
-                        Para datos reales de TTN, configura un webhook en tu aplicación.
-                    </div>
-                `;
-                alertElement.className = "alert alert-info";
-            } else {
-                modeElement.textContent = "TTN REAL";
-                modeElement.style.color = "var(--success)";
-                alertElement.innerHTML = `
-                    <i class="fas fa-broadcast-tower"></i>
-                    <div>
-                        <strong>Modo TTN activo</strong><br>
-                        Conectando a The Things Network...
-                    </div>
-                `;
-                alertElement.className = "alert alert-warning";
-            }
+            // Generar distancia aleatoria realista
+            const distance = Math.floor(Math.random() * (1900 - 120 + 1)) + 120;
+            const timestamp = new Date().toISOString();
+            
+            updateDisplay(distance, timestamp, false, '');
         }
         
-        // Función para conectar a TTN (esqueleto)
-        async function connectToTTN() {
-            // Aquí iría la conexión real a TTN
-            console.log("Conectando a TTN...");
-            // Por ahora, usamos simulación
-            currentIndex = (currentIndex + 1) % distances.length;
-            const distance = distances[currentIndex] + Math.floor(Math.random() * 50);
-            updateDisplay(distance);
+        // Función para actualizar estado
+        function updateStatus(type, message) {
+            const badge = document.getElementById('statusBadge');
+            const text = document.getElementById('statusText');
+            
+            // Remover todas las clases de estado
+            badge.classList.remove('status-connected', 'status-simulated', 'status-error');
+            
+            // Añadir nueva clase
+            if (type === 'connected') {
+                badge.classList.add('status-connected');
+                badge.querySelector('i').className = 'fas fa-circle';
+            } else if (type === 'simulated') {
+                badge.classList.add('status-simulated');
+                badge.querySelector('i').className = 'fas fa-exclamation-circle';
+            } else {
+                badge.classList.add('status-error');
+                badge.querySelector('i').className = 'fas fa-times-circle';
+            }
+            
+            text.textContent = message;
+        }
+        
+        // Función para mostrar datos crudos
+        function showRawData() {
+            fetchData().then(() => {
+                // Aquí podrías mostrar un modal con los datos crudos
+                alert('Los datos crudos se muestran en la consola (F12 → Console)');
+            });
+        }
+        
+        // Función para mostrar/ocultar loading
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
         }
         
         // Inicializar
         document.addEventListener('DOMContentLoaded', function() {
-            // Configurar enlace de GitHub
-            const repoUrl = window.location.origin.includes('github.io') 
-                ? window.location.origin 
-                : 'https://github.com/TU-USUARIO/monitor-gasoil';
-            document.querySelector('.github-link').href = repoUrl;
+            console.log('Monitor de Gasoil iniciado');
+            console.log('Endpoint:', GOOGLE_SCRIPT_URL);
             
-            // Primera lectura
-            getNewReading();
+            // Obtener datos iniciales
+            fetchData();
             
-            // Auto-actualizar cada 15 segundos
-            setInterval(getNewReading, 15000);
+            // Configurar auto-actualización cada 60 segundos
+            updateInterval = setInterval(fetchData, 60000);
             
-            // Mostrar mensaje de bienvenida
-            console.log("Monitor de Gasoil iniciado");
-            console.log("GitHub Pages activo");
+            // Mostrar notificación de inicio
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification('Monitor de Gasoil', {
+                    body: 'Sistema iniciado correctamente'
+                });
+            }
+        });
+        
+        // Detener intervalo al salir
+        window.addEventListener('beforeunload', function() {
+            if (updateInterval) {
+                clearInterval(updateInterval);
+            }
         });
     </script>
 </body>
