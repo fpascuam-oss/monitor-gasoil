@@ -2,159 +2,68 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Prueba Google Script CORREGIDO</title>
+    <title>Prueba Simple</title>
     <style>
-        body { font-family: Arial; padding: 20px; background: #f0f2f5; }
-        .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .btn { background: #4285f4; color: white; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; margin: 10px 5px; font-size: 16px; }
-        .btn:hover { background: #3367d6; }
-        .result { margin: 20px 0; padding: 20px; border-radius: 5px; background: #f8f9fa; }
-        pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow: auto; font-size: 14px; }
-        .success { border-left: 5px solid #34a853; }
-        .error { border-left: 5px solid #ea4335; }
+        body { font-family: Arial; padding: 20px; }
+        button { background: #4CAF50; color: white; padding: 10px 20px; border: none; cursor: pointer; margin: 5px; }
+        pre { background: #f5f5f5; padding: 10px; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🛠️ Prueba Google Script Corregido</h1>
-        
-        <p><strong>URL del Script:</strong><br>
-        <input type="text" id="scriptUrl" value="https://script.google.com/macros/s/AKfycbxEHHmB9cSJ7H5KUyXvy8GZf98pGPnMWZhYT7OdLHjPw4nXxjORyZf7W_8vm_MJU6_mUg/exec" style="width: 100%; padding: 10px; margin: 10px 0;"></p>
-        
-        <div>
-            <button class="btn" onclick="testGET()">📡 Probar GET</button>
-            <button class="btn" onclick="testPOST()">🔄 Probar POST</button>
-            <button class="btn" onclick="openDirect()">🔗 Abrir URL Directa</button>
-        </div>
-        
-        <div id="result" class="result"></div>
-        
-        <div style="margin-top: 30px; padding: 15px; background: #e8f0fe; border-radius: 5px;">
-            <h3>📋 Pasos para solucionar:</h3>
-            <ol>
-                <li><strong>Copia</strong> el nuevo código del Google Script</li>
-                <li><strong>Pégalo</strong> en tu Google Script (reemplaza todo)</li>
-                <li><strong>Guarda</strong> (Ctrl+S)</li>
-                <li><strong>Haz Deploy</strong> → "Manage deployments" → "New version"</li>
-                <li><strong>Prueba</strong> con los botones de arriba</li>
-            </ol>
-        </div>
-    </div>
-
+    <h1>Prueba Simple</h1>
+    <button onclick="test()">Probar</button>
+    <div id="result"></div>
+    
     <script>
-        async function testGET() {
-            const url = document.getElementById('scriptUrl').value;
-            const resultDiv = document.getElementById('result');
-            
-            resultDiv.innerHTML = '<p>🔍 Probando GET request...</p>';
-            
+        const URL = 'https://script.google.com/macros/s/AKfycbxEHHmB9cSJ7H5KUyXvy8GZf98pGPnMWZhYT7OdLHjPw4nXxjORyZf7W_8vm_MJU6_mUg/exec';
+        
+        async function test() {
             try {
-                const response = await fetch(url);
-                const data = await response.json();
+                // 1. Probar GET primero
+                const getResponse = await fetch(URL);
+                const getData = await getResponse.json();
                 
-                resultDiv.innerHTML = `
-                    <div class="success">
-                        <h3>✅ GET funcionando correctamente</h3>
-                        <p><strong>Estado HTTP:</strong> ${response.status}</p>
-                        <p><strong>URL:</strong> ${url}</p>
-                        <pre>${JSON.stringify(data, null, 2)}</pre>
-                    </div>
+                document.getElementById('result').innerHTML = `
+                    <h3>GET funciona:</h3>
+                    <pre>${JSON.stringify(getData, null, 2)}</pre>
                 `;
                 
-                console.log('GET exitoso:', data);
+                console.log('GET OK:', getData);
+                
+                // 2. Probar POST después de 2 segundos
+                setTimeout(testPost, 2000);
                 
             } catch (error) {
-                resultDiv.innerHTML = `
-                    <div class="error">
-                        <h3>❌ Error en GET</h3>
-                        <p><strong>Error:</strong> ${error.message}</p>
-                        <p><strong>Detalles:</strong> ${getErrorDetails(error)}</p>
-                        <p><strong>Solución:</strong> Verifica que el Google Script esté desplegado correctamente.</p>
-                    </div>
-                `;
-                
-                console.error('GET error:', error);
+                document.getElementById('result').innerHTML = `<p style="color:red">Error: ${error.message}</p>`;
             }
         }
         
-        async function testPOST() {
-            const url = document.getElementById('scriptUrl').value;
-            const resultDiv = document.getElementById('result');
-            
-            resultDiv.innerHTML = '<p>🔍 Probando POST request (simulación webhook)...</p>';
-            
-            const testData = {
-                received_at: new Date().toISOString(),
-                uplink_message: {
-                    decoded_payload: {
-                        Bat: 3.45,
-                        Distance: "1525 mm",
-                        TempC_DS18B20: "19.5"
-                    }
-                },
-                end_device_ids: {
-                    device_id: "eui-a84041602187da56"
-                }
+        async function testPost() {
+            const postData = {
+                test: "datos simples",
+                value: 123
             };
             
             try {
-                const response = await fetch(url, {
+                const response = await fetch(URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(testData)
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(postData)
                 });
                 
                 const data = await response.json();
                 
-                resultDiv.innerHTML = `
-                    <div class="success">
-                        <h3>✅ POST funcionando correctamente</h3>
-                        <p><strong>Estado HTTP:</strong> ${response.status}</p>
-                        <p><strong>Datos enviados:</strong></p>
-                        <pre>${JSON.stringify(testData, null, 2)}</pre>
-                        <p><strong>Respuesta recibida:</strong></p>
-                        <pre>${JSON.stringify(data, null, 2)}</pre>
-                    </div>
+                document.getElementById('result').innerHTML += `
+                    <h3>POST funciona:</h3>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
                 `;
                 
-                console.log('POST exitoso:', data);
+                console.log('POST OK:', data);
                 
             } catch (error) {
-                resultDiv.innerHTML = `
-                    <div class="error">
-                        <h3>❌ Error en POST</h3>
-                        <p><strong>Error:</strong> ${error.message}</p>
-                        <p>Este error puede ser normal si el script no maneja POST aún.</p>
-                        <p>Primero asegúrate de que GET funciona.</p>
-                    </div>
-                `;
-                
-                console.error('POST error:', error);
+                document.getElementById('result').innerHTML += `<p style="color:red">POST Error: ${error.message}</p>`;
             }
         }
-        
-        function openDirect() {
-            const url = document.getElementById('scriptUrl').value;
-            window.open(url, '_blank');
-        }
-        
-        function getErrorDetails(error) {
-            if (error.message.includes('Failed to fetch')) {
-                return 'CORS bloqueado o URL incorrecta. Prueba abrir la URL directamente.';
-            }
-            if (error.message.includes('NetworkError')) {
-                return 'Error de red o URL no accesible.';
-            }
-            return error.message;
-        }
-        
-        // Probar GET automáticamente al cargar
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Prueba lista');
-            // testGET(); // Descomenta para auto-probar
-        });
     </script>
 </body>
 </html>
