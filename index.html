@@ -27,7 +27,7 @@
             padding: 40px;
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
             text-align: center;
-            max-width: 600px;
+            max-width: 500px;
             width: 100%;
         }
         
@@ -58,17 +58,21 @@
             margin-top: 10px;
         }
         
+        .info {
+            margin-top: 20px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
         .status {
             margin-top: 15px;
-            padding: 15px;
+            padding: 10px;
             border-radius: 5px;
             background: #f5f5f5;
             color: #333;
             font-family: monospace;
-            text-align: left;
-            max-height: 200px;
-            overflow-y: auto;
             font-size: 0.9rem;
+            text-align: left;
         }
         
         .btn {
@@ -79,7 +83,7 @@
             border-radius: 25px;
             font-size: 1rem;
             cursor: pointer;
-            margin: 15px 0;
+            margin-top: 20px;
             transition: all 0.3s;
         }
         
@@ -88,27 +92,15 @@
             box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
         }
         
-        .btn-secondary {
-            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
-            margin-left: 10px;
-        }
-        
-        .info {
-            margin-top: 20px;
+        .timestamp {
+            margin-top: 10px;
             color: #666;
             font-size: 0.9rem;
         }
         
-        .debug-btn {
-            background: #ff9800;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-            font-size: 0.8rem;
-            cursor: pointer;
-            margin-top: 10px;
-        }
+        .success { background: #e8f5e9 !important; color: #2e7d32 !important; }
+        .error { background: #ffebee !important; color: #c62828 !important; }
+        .info-status { background: #e3f2fd !important; color: #1565c0 !important; }
     </style>
 </head>
 <body>
@@ -120,21 +112,17 @@
             <div class="distance-unit">mm</div>
         </div>
         
-        <button id="getDistanceBtn" class="btn">
-            🔍 Obtener Distancia
-        </button>
-        
-        <button id="debugBtn" class="btn btn-secondary">
-            🐛 Ver Respuesta Completa
-        </button>
-        
         <div id="status" class="status">
             Presiona "Obtener Distancia" para consultar TTN
         </div>
         
-        <div id="debugInfo" class="status" style="display: none; margin-top: 10px;">
-            <!-- Aquí se mostrará la respuesta completa -->
+        <div id="timestamp" class="timestamp">
+            Última actualización: --
         </div>
+        
+        <button id="getDistanceBtn" class="btn">
+            🔍 Obtener Distancia
+        </button>
         
         <div class="info">
             Dispositivo: eui-a84041602187da56 | Aplicación: nivelgasoil
@@ -150,48 +138,56 @@
         // ELEMENTOS DEL DOM
         const distanceElement = document.getElementById("distance");
         const statusElement = document.getElementById("status");
-        const debugInfoElement = document.getElementById("debugInfo");
+        const timestampElement = document.getElementById("timestamp");
         const getDistanceBtn = document.getElementById("getDistanceBtn");
-        const debugBtn = document.getElementById("debugBtn");
-
-        let rawResponseData = null;
 
         /**
-         * ACTUALIZA EL ESTADO EN PANTALLA
+         * PARSEA RESPUESTA NDJSON (Newline Delimited JSON)
+         * Formato: {"result": {...}}\n{"result": {...}}\n...
          */
-        function updateStatus(message, type = 'info') {
-            statusElement.textContent = message;
+        function parseNdjson(ndjsonText) {
+            console.log("📄 Parseando respuesta NDJSON...");
             
-            switch(type) {
-                case 'success':
-                    statusElement.style.background = "#e8f5e9";
-                    statusElement.style.color = "#2e7d32";
-                    break;
-                case 'error':
-                    statusElement.style.background = "#ffebee";
-                    statusElement.style.color = "#c62828";
-                    break;
-                case 'warning':
-                    statusElement.style.background = "#fff3e0";
-                    statusElement.style.color = "#ef6c00";
-                    break;
-                default:
-                    statusElement.style.background = "#e3f2fd";
-                    statusElement.style.color = "#1565c0";
+            if (!ndjsonText || ndjsonText.trim() === '') {
+                console.log("⚠️  Respuesta vacía");
+                return [];
             }
+            
+            // Dividir por líneas y filtrar líneas vacías
+            const lines = ndjsonText.split('\n').filter(line => line.trim() !== '');
+            console.log(`📊 Líneas encontradas: ${lines.length}`);
+            
+            const results = [];
+            
+            // Parsear cada línea como JSON individual
+            for (let i = 0; i < lines.length; i++) {
+                try {
+                    const obj = JSON.parse(lines[i]);
+                    if (obj.result) {
+                        results.push(obj.result);
+                    }
+                } catch (error) {
+                    console.error(`❌ Error parseando línea ${i + 1}:`, error);
+                    console.log(`📄 Línea ${i + 1}: ${lines[i].substring(0, 100)}...`);
+                }
+            }
+            
+            console.log(`✅ Objetos parseados: ${results.length}`);
+            return results;
         }
 
         /**
-         * OBTIENE LA ÚLTIMA DISTANCIA DE TTN - VERSIÓN DEBUG
+         * OBTIENE LA ÚLTIMA DISTANCIA DE TTN - VERSIÓN NDJSON
          */
         async function getLastDistance() {
             try {
-                updateStatus("🔗 Conectando a TTN...", 'info');
+                statusElement.textContent = "🔗 Conectando a TTN...";
+                statusElement.className = "status info-status";
                 distanceElement.textContent = "...";
                 distanceElement.style.color = "#FF9800";
                 
-                // URL de la API de TTN - Buscamos 10 mensajes para debug
-                const url = `https://eu1.cloud.thethings.network/api/v3/as/applications/${TTN_APP_ID}/packages/storage/uplink_message?last=24h&order=-received_at&limit=10`;
+                // URL de la API de TTN
+                const url = `https://eu1.cloud.thethings.network/api/v3/as/applications/${TTN_APP_ID}/packages/storage/uplink_message?last=24h&order=-received_at&limit=5`;
                 
                 console.log("🌐 Consultando TTN API...");
                 console.log("URL:", url);
@@ -210,133 +206,62 @@
                     throw new Error(`Error HTTP ${response.status}: ${response.statusText}`);
                 }
                 
-                // Obtener y guardar la respuesta completa
+                // Obtener respuesta como texto (es NDJSON)
                 const responseText = await response.text();
-                rawResponseData = responseText;
+                console.log(`📄 Longitud respuesta: ${responseText.length} caracteres`);
+                console.log(`📄 Primeros 200 caracteres: ${responseText.substring(0, 200)}...`);
                 
-                // Intentar parsear como JSON
-                let data;
-                try {
-                    data = JSON.parse(responseText);
-                    console.log("✅ JSON parseado correctamente");
-                } catch (jsonError) {
-                    console.error("❌ Error parseando JSON:", jsonError);
-                    console.log("Respuesta recibida:", responseText.substring(0, 500));
-                    throw new Error("Respuesta no es JSON válido");
+                // Parsear respuesta NDJSON
+                const messages = parseNdjson(responseText);
+                
+                if (messages.length === 0) {
+                    throw new Error("No se encontraron mensajes en la respuesta");
                 }
                 
-                // Guardar datos para debug
-                window.ttnData = data;
+                console.log(`📦 Total de mensajes parseados: ${messages.length}`);
                 
-                // MOSTRAR INFORMACIÓN DE DEBUG EN CONSOLA
-                console.log("=".repeat(60));
-                console.log("📦 ESTRUCTURA DE LA RESPUESTA TTN:");
-                console.log("=".repeat(60));
-                
-                if (!data.result || !Array.isArray(data.result)) {
-                    console.log("❌ No hay 'result' o no es array");
-                    console.log("Data completa:", data);
-                    throw new Error("Formato de respuesta inválido");
-                }
-                
-                console.log(`📊 Total de mensajes en respuesta: ${data.result.length}`);
-                
-                // Mostrar información de cada mensaje
-                data.result.forEach((msg, index) => {
-                    console.log(`\n📄 MENSAJE ${index + 1}:`);
-                    
-                    // Dispositivo
-                    const deviceId = msg.end_device_ids?.device_id || 'DESCONOCIDO';
-                    console.log(`   📱 Dispositivo: ${deviceId}`);
-                    
-                    // Fecha
-                    console.log(`   📅 Fecha: ${msg.received_at || 'NO DISPONIBLE'}`);
-                    
-                    // Verificar si es nuestro dispositivo
-                    if (deviceId === DEVICE_ID) {
-                        console.log(`   ✅ ¡ES NUESTRO DISPOSITIVO!`);
-                        
-                        // Mostrar payload decodificado
-                        if (msg.uplink_message?.decoded_payload) {
-                            console.log(`   📊 Payload decodificado:`);
-                            const payload = msg.uplink_message.decoded_payload;
-                            Object.keys(payload).forEach(key => {
-                                console.log(`      ${key}: ${JSON.stringify(payload[key])}`);
-                            });
-                            
-                            // Intentar extraer distancia
-                            if (payload.Distance) {
-                                console.log(`   📏 DISTANCIA ENCONTRADA: ${payload.Distance}`);
-                            }
-                        } else {
-                            console.log(`   ⚠️  No hay payload decodificado`);
-                        }
-                        
-                        // Mostrar payload hexadecimal también
-                        if (msg.uplink_message?.frm_payload) {
-                            console.log(`   🔢 Payload hex: ${msg.uplink_message.frm_payload}`);
-                        }
-                    } else {
-                        console.log(`   ⚠️  No es nuestro dispositivo (buscamos: ${DEVICE_ID})`);
-                    }
-                });
-                
-                console.log("=".repeat(60));
-                
-                // BUSCAR NUESTRO DISPOSITIVO
-                const ourMessages = data.result.filter(msg => 
+                // Buscar mensajes de nuestro dispositivo
+                const ourMessages = messages.filter(msg => 
                     msg.end_device_ids?.device_id === DEVICE_ID
                 );
                 
+                console.log(`📱 Mensajes de nuestro dispositivo: ${ourMessages.length}`);
+                
                 if (ourMessages.length === 0) {
-                    console.log("❌ No se encontraron mensajes de nuestro dispositivo");
-                    
                     // Mostrar qué dispositivos sí hay
-                    const deviceList = [...new Set(data.result.map(msg => 
+                    const deviceList = [...new Set(messages.map(msg => 
                         msg.end_device_ids?.device_id || 'desconocido'
                     ))];
-                    console.log(`📋 Dispositivos disponibles: ${deviceList.join(', ')}`);
                     
-                    throw new Error(`No hay mensajes del dispositivo ${DEVICE_ID}. Dispositivos disponibles: ${deviceList.join(', ')}`);
+                    console.log(`📋 Dispositivos disponibles: ${deviceList.join(', ')}`);
+                    throw new Error(`No hay mensajes del dispositivo ${DEVICE_ID}`);
                 }
                 
-                console.log(`✅ Encontrados ${ourMessages.length} mensajes de nuestro dispositivo`);
+                // Ordenar por fecha (más reciente primero)
+                ourMessages.sort((a, b) => 
+                    new Date(b.received_at) - new Date(a.received_at)
+                );
                 
                 // Tomar el mensaje más reciente
                 const latestMessage = ourMessages[0];
                 console.log(`📅 Mensaje más reciente: ${latestMessage.received_at}`);
                 
-                // INTENTAR EXTRAER LA DISTANCIA
+                // EXTRAER LA DISTANCIA
                 let distancia = null;
+                let distanciaRaw = null;
                 
-                // 1. Intentar desde payload decodificado
                 if (latestMessage.uplink_message?.decoded_payload?.Distance) {
-                    const distanciaStr = String(latestMessage.uplink_message.decoded_payload.Distance);
-                    console.log(`📏 Distancia (string): "${distanciaStr}"`);
+                    distanciaRaw = latestMessage.uplink_message.decoded_payload.Distance;
+                    console.log(`📏 Distancia (raw): "${distanciaRaw}"`);
                     
-                    // Extraer solo números
-                    const match = distanciaStr.match(/(\d+(\.\d+)?)/);
+                    // Extraer solo números (ej: "1497 mm" → "1497")
+                    const match = distanciaRaw.match(/(\d+(\.\d+)?)/);
                     if (match) {
                         distancia = match[1];
                         console.log(`✅ Distancia extraída: ${distancia} mm`);
                     } else {
-                        console.log(`⚠️  No se pudo extraer número de: "${distanciaStr}"`);
-                    }
-                } else {
-                    console.log("⚠️  No se encontró 'Distance' en decoded_payload");
-                    console.log("Payload disponible:", latestMessage.uplink_message?.decoded_payload);
-                }
-                
-                // 2. Si no funciona, intentar desde payload hexadecimal
-                if (!distancia && latestMessage.uplink_message?.frm_payload) {
-                    console.log("🔄 Intentando decodificar payload hexadecimal...");
-                    const hexPayload = latestMessage.uplink_message.frm_payload;
-                    
-                    // Convertir primer byte a distancia (asumiendo que es distancia en cm)
-                    if (hexPayload.length >= 2) {
-                        const firstByte = parseInt(hexPayload.substring(0, 2), 16);
-                        distancia = firstByte * 10; // Convertir cm a mm
-                        console.log(`🔢 Distancia desde hex (primer byte): ${distancia} mm`);
+                        console.log(`⚠️  No se pudo extraer número de: "${distanciaRaw}"`);
+                        distancia = distanciaRaw; // Usar el valor crudo
                     }
                 }
                 
@@ -348,13 +273,39 @@
                     
                     // Formatear fecha
                     const fecha = new Date(latestMessage.received_at);
-                    const fechaStr = fecha.toLocaleString('es-ES');
+                    const fechaStr = fecha.toLocaleString('es-ES', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
                     
-                    updateStatus(`✅ Distancia obtenida: ${distancia} mm\n📅 ${fechaStr}`, 'success');
+                    timestampElement.textContent = `Última actualización: ${fechaStr}`;
+                    
+                    // Mostrar información adicional
+                    const battery = latestMessage.uplink_message?.decoded_payload?.Bat;
+                    const temp = latestMessage.uplink_message?.decoded_payload?.TempC_DS18B20;
+                    
+                    let statusMsg = `✅ Distancia: ${distancia} mm`;
+                    if (battery) statusMsg += ` | Batería: ${battery} V`;
+                    if (temp) statusMsg += ` | Temp: ${temp} °C`;
+                    
+                    statusElement.textContent = statusMsg;
+                    statusElement.className = "status success";
+                    
+                    console.log("📋 RESUMEN:");
+                    console.log(`   📍 Distancia: ${distancia} mm`);
+                    console.log(`   🔋 Batería: ${battery || 'N/A'} V`);
+                    console.log(`   🌡️ Temperatura: ${temp || 'N/A'} °C`);
+                    console.log(`   📅 Fecha: ${fechaStr}`);
                     
                     return distancia;
                 } else {
-                    throw new Error("No se pudo extraer la distancia del mensaje");
+                    console.log("⚠️  No se encontró 'Distance' en el payload");
+                    console.log("Payload disponible:", latestMessage.uplink_message?.decoded_payload);
+                    throw new Error("No se encontró la distancia en el mensaje");
                 }
                 
             } catch (error) {
@@ -364,36 +315,13 @@
                 distanceElement.textContent = "ERROR";
                 distanceElement.style.color = "#f44336";
                 
-                updateStatus(`❌ Error: ${error.message}`, 'error');
+                statusElement.textContent = `❌ Error: ${error.message}`;
+                statusElement.className = "status error";
+                
+                timestampElement.textContent = "Error en la consulta";
                 
                 return null;
             }
-        }
-
-        /**
-         * MUESTRA LA RESPUESTA COMPLETA PARA DEBUG
-         */
-        function showDebugInfo() {
-            if (!rawResponseData) {
-                debugInfoElement.innerHTML = "<strong>No hay datos de respuesta disponibles</strong>";
-                debugInfoElement.style.display = 'block';
-                return;
-            }
-            
-            try {
-                const data = JSON.parse(rawResponseData);
-                debugInfoElement.innerHTML = `
-                    <strong>RESPUESTA COMPLETA DE TTN:</strong><br><br>
-                    <pre>${JSON.stringify(data, null, 2)}</pre>
-                `;
-            } catch (e) {
-                debugInfoElement.innerHTML = `
-                    <strong>RESPUESTA (no es JSON):</strong><br><br>
-                    <pre>${rawResponseData.substring(0, 2000)}...</pre>
-                `;
-            }
-            
-            debugInfoElement.style.display = 'block';
         }
 
         /**
@@ -403,31 +331,27 @@
             console.log("🚀 Sistema de distancia iniciado");
             console.log(`📱 Dispositivo: ${DEVICE_ID}`);
             console.log(`📦 Aplicación: ${TTN_APP_ID}`);
+            console.log("=".repeat(50));
             
-            // Configurar botón principal
+            // Configurar botón
             getDistanceBtn.addEventListener("click", async () => {
-                console.log("=".repeat(60));
-                console.log("🔄 Botón presionado - Obteniendo distancia...");
-                debugInfoElement.style.display = 'none';
+                console.log("\n🔄 Botón presionado - Obteniendo distancia...");
                 await getLastDistance();
             });
             
-            // Configurar botón de debug
-            debugBtn.addEventListener("click", showDebugInfo);
-            
             // Obtener distancia automáticamente al cargar
             setTimeout(() => {
-                console.log("=".repeat(60));
-                console.log("⏰ Obteniendo distancia inicial...");
+                console.log("\n⏰ Obteniendo distancia inicial...");
                 getLastDistance();
             }, 1000);
             
             // Actualizar automáticamente cada 30 segundos
             setInterval(() => {
-                console.log("=".repeat(60));
-                console.log("⏰ Actualización automática...");
+                console.log("\n⏰ Actualización automática...");
                 getLastDistance();
             }, 30000);
+            
+            console.log("⏰ Actualización automática configurada cada 30 segundos");
         }
 
         // Iniciar cuando se cargue la página
