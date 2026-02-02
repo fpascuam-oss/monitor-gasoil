@@ -3,429 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MONITOR GASOIL</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Monitor Gasoil - Solo Distancia</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', Arial, sans-serif;
         }
         
         body {
             background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
-            color: #fff;
             min-height: 100vh;
-            padding: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
+            padding: 20px;
         }
         
         .container {
-            max-width: 900px;
-            width: 100%;
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .header h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 10px;
-            color: #bbdefb;
-            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-        }
-        
-        .header p {
-            font-size: 1.1rem;
-            color: #90caf9;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-        
-        .header i {
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { opacity: 0.7; }
-            50% { opacity: 1; }
-            100% { opacity: 0.7; }
-        }
-        
-        .dashboard {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 25px;
-            margin-bottom: 30px;
-        }
-        
-        @media (max-width: 768px) {
-            .dashboard {
-                grid-template-columns: 1fr;
-            }
-        }
-        
-        .card {
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.95);
             border-radius: 15px;
-            padding: 25px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-        
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-        }
-        
-        .card-title {
-            font-size: 1.3rem;
-            color: #bbdefb;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 600;
-        }
-        
-        .card-title i {
-            font-size: 1.5rem;
-        }
-        
-        .distance-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            height: 250px;
-        }
-        
-        .distance-visual {
-            position: relative;
-            width: 60px;
-            height: 200px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 30px;
-            margin-bottom: 20px;
-            overflow: hidden;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-        }
-        
-        .distance-bar {
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            background: linear-gradient(to top, #4CAF50, #8BC34A);
-            border-radius: 30px;
-            transition: height 1s ease;
-            height: 0%;
-        }
-        
-        .distance-labels {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            height: 200px;
-            position: absolute;
-            left: -50px;
-            font-size: 0.9rem;
-            color: #bbdefb;
-        }
-        
-        .distance-value-container {
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
             text-align: center;
-            margin-top: 10px;
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        .title {
+            color: #283593;
+            margin-bottom: 30px;
+            font-size: 1.8rem;
+        }
+        
+        .distance-display {
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            border-radius: 10px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 10px 20px rgba(33, 150, 243, 0.3);
         }
         
         .distance-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #fff;
-            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            font-size: 4rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
         
-        .distance-label {
-            font-size: 1.1rem;
+        .distance-unit {
+            font-size: 1.5rem;
             color: #bbdefb;
-            margin-top: 5px;
+            margin-top: 10px;
         }
         
-        .data-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+        .info {
+            margin-top: 20px;
+            color: #666;
+            font-size: 0.9rem;
         }
         
-        .data-item {
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .data-label {
-            font-size: 1rem;
-            color: #bbdefb;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .data-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #fff;
-            min-height: 45px;
-            display: flex;
-            align-items: center;
-        }
-        
-        .data-unit {
-            font-size: 1.2rem;
-            color: #bbdefb;
-            margin-left: 5px;
-        }
-        
-        .controls {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-bottom: 25px;
+        .status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            background: #f5f5f5;
+            color: #333;
         }
         
         .btn {
-            padding: 14px 28px;
+            background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+            color: white;
             border: none;
-            border-radius: 50px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            min-width: 180px;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #2196F3 0%, #0d47a1 100%);
-            color: white;
-            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.4);
-        }
-        
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #0d8bf2 0%, #0a3d8f 100%);
-            box-shadow: 0 8px 20px rgba(33, 150, 243, 0.6);
-            transform: translateY(-3px);
-        }
-        
-        .btn-secondary {
-            background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
-            color: white;
-            box-shadow: 0 5px 15px rgba(255, 152, 0, 0.4);
-        }
-        
-        .btn-secondary:hover {
-            background: linear-gradient(135deg, #f57c00 0%, #e65100 100%);
-            box-shadow: 0 8px 20px rgba(255, 152, 0, 0.6);
-            transform: translateY(-3px);
-        }
-        
-        .btn:active {
-            transform: translateY(1px);
-        }
-        
-        .status-footer {
-            text-align: center;
-            padding-top: 20px;
-            border-top: 2px solid rgba(255, 255, 255, 0.1);
-            color: #bbdefb;
-            font-size: 1.1rem;
-        }
-        
-        .status-text {
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-        
-        .status-text i {
-            font-size: 1.2rem;
-        }
-        
-        .next-update {
+            padding: 12px 25px;
+            border-radius: 25px;
             font-size: 1rem;
-            color: #90caf9;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
         }
         
-        .error {
-            color: #ff5252 !important;
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
         }
         
-        .warning {
-            color: #FF9800 !important;
-        }
-        
-        .success {
-            color: #4CAF50 !important;
-        }
-        
-        .device-info {
-            font-size: 0.9rem;
-            color: #90caf9;
-            text-align: center;
+        .timestamp {
             margin-top: 15px;
+            color: #666;
+            font-size: 0.9rem;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1><i class="fas fa-gas-pump"></i> MONITOR GASOIL</h1>
-            <p><i class="fas fa-sync-alt"></i> Actualización automática cada 30 segundos</p>
-            <div id="data-status" class="status-text">Conectando...</div>
+        <h1 class="title">MONITOR GASOIL - DISTANCIA</h1>
+        
+        <div class="distance-display">
+            <div id="distance" class="distance-value">--</div>
+            <div class="distance-unit">mm</div>
         </div>
         
-        <div class="dashboard">
-            <div class="card">
-                <div class="card-title">
-                    <i class="fas fa-ruler-vertical"></i> Distancia del sensor
-                </div>
-                <div class="distance-container">
-                    <div class="distance-labels">
-                        <div>100%</div>
-                        <div>75%</div>
-                        <div>50%</div>
-                        <div>25%</div>
-                        <div>0%</div>
-                    </div>
-                    <div class="distance-visual">
-                        <div class="distance-bar"></div>
-                    </div>
-                    <div class="distance-value-container">
-                        <div id="distance-value" class="distance-value">-- mm</div>
-                        <div class="distance-label">Distancia del sensor</div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="card-title">
-                    <i class="fas fa-tachometer-alt"></i> Información del tanque
-                </div>
-                <div class="data-grid">
-                    <div class="data-item">
-                        <div class="data-label">
-                            <i class="fas fa-percentage"></i> Nivel del tanque
-                        </div>
-                        <div id="tank-level" class="data-value">--%</div>
-                    </div>
-                    
-                    <div class="data-item">
-                        <div class="data-label">
-                            <i class="fas fa-oil-can"></i> Contenido
-                        </div>
-                        <div id="tank-liters" class="data-value">--<span class="data-unit"> Litros</span></div>
-                    </div>
-                    
-                    <div class="data-item">
-                        <div class="data-label">
-                            <i class="fas fa-battery-full"></i> Batería
-                        </div>
-                        <div id="battery" class="data-value">--<span class="data-unit"> V</span></div>
-                    </div>
-                    
-                    <div class="data-item">
-                        <div class="data-label">
-                            <i class="fas fa-microchip"></i> Sensor
-                        </div>
-                        <div class="data-value">LDDS75</div>
-                    </div>
-                </div>
-                
-                <div class="data-grid" style="margin-top: 25px;">
-                    <div class="data-item">
-                        <div class="data-label">
-                            <i class="far fa-clock"></i> Última lectura
-                        </div>
-                        <div id="last-reading" class="data-value">--:-- --/--/----</div>
-                    </div>
-                    
-                    <div class="data-item">
-                        <div class="data-label">
-                            <i class="fas fa-database"></i> Estado datos
-                        </div>
-                        <div id="data-status-value" class="data-value">--</div>
-                    </div>
-                </div>
-            </div>
+        <div id="status" class="status">
+            Presiona "Obtener Distancia" para consultar TTN
         </div>
         
-        <div class="controls">
-            <button id="update-button" class="btn btn-primary">
-                <i class="fas fa-sync-alt"></i> Actualizar Ahora
-            </button>
-            <button id="force-ttn-button" class="btn btn-secondary">
-                <i class="fas fa-bolt"></i> Forzar TTN
-            </button>
+        <div id="timestamp" class="timestamp">
+            Última actualización: --
         </div>
         
-        <div class="status-footer">
-            <div id="system-status" class="status-text">
-                <i class="fas fa-circle-notch fa-spin"></i> Sistema iniciando...
-            </div>
-            <div id="next-update" class="next-update">Próxima actualización: --:--</div>
-            <div class="device-info">
-                Dispositivo: eui-a84041602187da56 | Aplicación: nivelgasoil | Capacidad: 1100 Litros
-            </div>
+        <button id="getDistanceBtn" class="btn">
+            Obtener Distancia
+        </button>
+        
+        <div class="info">
+            Dispositivo: eui-a84041602187da56 | Aplicación: nivelgasoil
         </div>
     </div>
 
     <script>
-        // ===============================
-        // CONFIGURACIÓN COMPLETA CON TUS PARÁMETROS
-        // ===============================
+        // CONFIGURACIÓN
         const TTN_APP_ID = "nivelgasoil";
         const TTN_API_KEY = "NNSXS.PNG274Q2UJQLFHO5J6JUCW73KGKX76WF2QZZYLA.QQSVQS36KN7NMV4SDPCJUWWMRRADWCQDGNPDNSMWEPXRN7FFYABA";
         const DEVICE_ID = "eui-a84041602187da56";
 
-        // PARÁMETROS DEL TANQUE (basados en tus datos)
-        const DIST_LLENO = 120;     // mm cuando hay 1100L (tanque lleno)
-        const DIST_VACIO = 1900;    // mm cuando hay 0L (tanque vacío)
-        const VOL_MAX = 1100;       // litros totales del tanque
-
-        // ===============================
-        // FUNCIONES PRINCIPALES
-        // ===============================
+        // ELEMENTOS DEL DOM
+        const distanceElement = document.getElementById("distance");
+        const statusElement = document.getElementById("status");
+        const timestampElement = document.getElementById("timestamp");
+        const getDistanceBtn = document.getElementById("getDistanceBtn");
 
         /**
-         * Consulta los datos más recientes de TTN
+         * OBTIENE LA ÚLTIMA DISTANCIA DE TTN
          */
-        async function fetchTTNData() {
-            const url = `https://eu1.cloud.thethings.network/api/v3/as/applications/${TTN_APP_ID}/packages/storage/uplink_message?last=10m&order=-received_at&limit=1`;
-            
-            console.log("🔗 Consultando TTN API v3...");
-            console.log(`Aplicación: ${TTN_APP_ID}`);
-            console.log(`Dispositivo: ${DEVICE_ID}`);
-            
+        async function getLastDistance() {
             try {
+                // Actualizar estado
+                statusElement.textContent = "🔗 Conectando a TTN...";
+                statusElement.style.background = "#e3f2fd";
+                statusElement.style.color = "#1565c0";
+                
+                // URL de la API de TTN
+                const url = `https://eu1.cloud.thethings.network/api/v3/as/applications/${TTN_APP_ID}/packages/storage/uplink_message?last=24h&order=-received_at&limit=1`;
+                
+                console.log("🌐 Consultando TTN API...");
+                
+                // Hacer la petición
                 const response = await fetch(url, {
                     headers: {
                         "Authorization": `Bearer ${TTN_API_KEY}`,
@@ -433,466 +157,119 @@
                     }
                 });
                 
-                console.log(`📊 Status HTTP: ${response.status} ${response.statusText}`);
+                console.log(`📊 Estado HTTP: ${response.status}`);
                 
-                if (response.status === 200) {
-                    const text = await response.text();
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+                
+                // Parsear respuesta
+                const data = await response.json();
+                console.log("✅ Datos recibidos de TTN");
+                
+                // Buscar mensaje de nuestro dispositivo
+                if (data.result && data.result.length > 0) {
+                    const mensaje = data.result[0];
                     
-                    if (!text || text.trim() === "") {
-                        console.log("⚠️  Respuesta vacía - No hay datos");
-                        return null;
-                    }
-                    
-                    try {
-                        const data = JSON.parse(text);
-                        console.log("✅ JSON parseado correctamente");
+                    // Verificar que sea nuestro dispositivo
+                    if (mensaje.end_device_ids && mensaje.end_device_ids.device_id === DEVICE_ID) {
                         
-                        // Filtrar por nuestro dispositivo específico
-                        if (data.result && data.result.length > 0) {
-                            console.log(`📦 Total mensajes recibidos: ${data.result.length}`);
+                        // Extraer distancia del payload decodificado
+                        const decodedPayload = mensaje.uplink_message?.decoded_payload;
+                        
+                        if (decodedPayload && decodedPayload.Distance) {
+                            // Extraer solo el número (ej: "1497 mm" → 1497)
+                            const distanciaStr = String(decodedPayload.Distance);
+                            const distanciaMatch = distanciaStr.match(/(\d+(\.\d+)?)/);
                             
-                            const filteredResults = data.result.filter(item => 
-                                item.end_device_ids && 
-                                item.end_device_ids.device_id === DEVICE_ID
-                            );
-                            
-                            if (filteredResults.length > 0) {
-                                console.log(`🎯 ${filteredResults.length} mensaje(s) para nuestro dispositivo`);
-                                data.result = filteredResults;
-                                return data;
-                            } else {
-                                console.log("⚠️  Mensajes recibidos pero no para nuestro dispositivo");
-                                console.log("Dispositivos en la respuesta:");
-                                data.result.forEach((item, index) => {
-                                    const devId = item.end_device_ids?.device_id || 'desconocido';
-                                    console.log(`  ${index + 1}. ${devId}`);
-                                });
-                                return null;
+                            if (distanciaMatch) {
+                                const distancia = distanciaMatch[1];
+                                
+                                // Mostrar en pantalla
+                                distanceElement.textContent = distancia;
+                                distanceElement.style.color = "#4CAF50";
+                                
+                                // Mostrar fecha/hora
+                                const fecha = new Date(mensaje.received_at);
+                                const fechaStr = fecha.toLocaleString('es-ES');
+                                timestampElement.textContent = `Última actualización: ${fechaStr}`;
+                                
+                                // Actualizar estado
+                                statusElement.textContent = `✅ Distancia obtenida: ${distancia} mm`;
+                                statusElement.style.background = "#e8f5e9";
+                                statusElement.style.color = "#2e7d32";
+                                
+                                console.log(`📍 Distancia obtenida: ${distancia} mm`);
+                                console.log(`📅 Fecha: ${fechaStr}`);
+                                
+                                return distancia;
                             }
-                        } else {
-                            console.log("ℹ️  No hay mensajes en la respuesta");
-                            return null;
                         }
-                    } catch (jsonError) {
-                        console.log(`❌ Error parseando JSON: ${jsonError.message}`);
-                        if (text.length > 0) {
-                            console.log(`📄 Primeros 500 caracteres: ${text.substring(0, 500)}`);
-                        }
-                        return null;
                     }
-                } else if (response.status === 401) {
-                    console.log("❌ Error 401 - API Key inválida o expirada");
-                    return null;
-                } else if (response.status === 403) {
-                    console.log("❌ Error 403 - Sin permisos para acceder a esta aplicación");
-                    return null;
-                } else if (response.status === 404) {
-                    console.log("⚠️  Error 404 - No se encontró la aplicación o no hay datos");
-                    return null;
-                } else {
-                    console.log(`❌ Error HTTP ${response.status}`);
-                    return null;
                 }
+                
+                // Si llegamos aquí, no hay datos válidos
+                throw new Error("No se encontraron datos de distancia para el dispositivo");
+                
             } catch (error) {
-                console.log(`❌ Error de red: ${error.message}`);
-                return null;
-            }
-        }
-
-        /**
-         * Decodifica el payload hexadecimal de TTN
-         */
-        function decodePayload(hexString) {
-            if (!hexString || hexString.length < 2) {
-                console.log("⚠️  Payload vacío o muy corto");
-                return null;
-            }
-            
-            try {
-                console.log(`📊 Payload hexadecimal: ${hexString}`);
+                console.error("❌ Error:", error.message);
                 
-                // Convertir hex a bytes
-                const bytes = [];
-                for (let i = 0; i < hexString.length; i += 2) {
-                    const byteStr = hexString.substr(i, 2);
-                    const byte = parseInt(byteStr, 16);
-                    if (!isNaN(byte)) {
-                        bytes.push(byte);
-                    }
-                }
+                // Mostrar error en pantalla
+                distanceElement.textContent = "ERROR";
+                distanceElement.style.color = "#f44336";
                 
-                console.log(`📊 Bytes decodificados: [${bytes.join(", ")}]`);
-                console.log(`📊 Longitud: ${bytes.length} byte(s)`);
+                statusElement.textContent = `❌ Error: ${error.message}`;
+                statusElement.style.background = "#ffebee";
+                statusElement.style.color = "#c62828";
                 
-                // ANÁLISIS DEL PAYLOAD
-                // Basado en LDDS75: primer byte = distancia en cm
-                if (bytes.length >= 1) {
-                    const distance_cm = bytes[0];
-                    const distance_mm = distance_cm * 10; // Convertir a mm
-                    
-                    console.log(`📏 Distancia sensor: ${distance_cm} cm = ${distance_mm} mm`);
-                    
-                    // Mostrar bytes adicionales si existen
-                    for (let i = 1; i < bytes.length; i++) {
-                        console.log(`📊 Byte ${i}: ${bytes[i]} (0x${bytes[i].toString(16).padStart(2, '0')})`);
-                    }
-                    
-                    return {
-                        distance_cm: distance_cm,
-                        distance_mm: distance_mm,
-                        raw_bytes: bytes,
-                        hex_payload: hexString
-                    };
-                }
+                timestampElement.textContent = "Error en la consulta";
                 
                 return null;
-            } catch (error) {
-                console.log(`❌ Error decodificando payload: ${error.message}`);
-                return null;
             }
         }
 
         /**
-         * Calcula el nivel del tanque basado en la distancia del sensor
-         * Usando interpolación lineal inversa como en tu código
+         * FORMATEA LA FECHA
          */
-        function calculateTankLevel(distance_mm) {
-            // Validar que la distancia esté dentro del rango esperado
-            if (distance_mm < DIST_LLENO) {
-                console.log(`⚠️  Distancia ${distance_mm}mm < DIST_LLENO ${DIST_LLENO}mm - Ajustando`);
-                distance_mm = DIST_LLENO;
-            }
-            if (distance_mm > DIST_VACIO) {
-                console.log(`⚠️  Distancia ${distance_mm}mm > DIST_VACIO ${DIST_VACIO}mm - Ajustando`);
-                distance_mm = DIST_VACIO;
-            }
-            
-            console.log(`📐 Parámetros del tanque:`);
-            console.log(`   DIST_LLENO (100%): ${DIST_LLENO} mm`);
-            console.log(`   DIST_VACIO (0%): ${DIST_VACIO} mm`);
-            console.log(`   Distancia medida: ${distance_mm} mm`);
-            console.log(`   VOL_MAX: ${VOL_MAX} litros`);
-            
-            // Cálculo de porcentaje (fórmula de interpolación lineal)
-            // Cuando distance = DIST_VACIO → 0%
-            // Cuando distance = DIST_LLENO → 100%
-            const porcentaje = 100 * (DIST_VACIO - distance_mm) / (DIST_VACIO - DIST_LLENO);
-            
-            // Cálculo de litros (interpolación lineal inversa)
-            const litros = VOL_MAX * (DIST_VACIO - distance_mm) / (DIST_VACIO - DIST_LLENO);
-            
-            console.log(`📊 Resultados cálculo:`);
-            console.log(`   Porcentaje: ${porcentaje.toFixed(1)}%`);
-            console.log(`   Litros: ${litros.toFixed(0)} L`);
-            
-            return {
-                percentage: Math.round(porcentaje * 10) / 10, // 1 decimal
-                liters: Math.round(litros),
-                distance_mm: Math.round(distance_mm),
-                distance_cm: Math.round(distance_mm / 10)
-            };
+        function formatFecha(fecha) {
+            return fecha.toLocaleString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
         }
 
         /**
-         * Formatea fecha para display
+         * INICIALIZACIÓN
          */
-        function formatDate(date) {
-            const day = date.getDate().toString().padStart(2, '0');
-            const month = (date.getMonth() + 1).toString().padStart(2, '0');
-            const year = date.getFullYear();
-            const hours = date.getHours().toString().padStart(2, '0');
-            const minutes = date.getMinutes().toString().padStart(2, '0');
+        function init() {
+            console.log("🚀 Sistema de distancia iniciado");
+            console.log(`📱 Dispositivo: ${DEVICE_ID}`);
+            console.log(`📦 Aplicación: ${TTN_APP_ID}`);
             
-            return {
-                dateStr: `${day}/${month}/${year}`,
-                timeStr: `${hours}:${minutes}`,
-                fullStr: `${hours}:${minutes} ${day}/${month}/${year}`
-            };
-        }
-
-        /**
-         * Actualiza la interfaz con los datos
-         */
-        function updateDisplay(data, decodedData, tankData) {
-            const now = new Date();
+            // Configurar botón
+            getDistanceBtn.addEventListener("click", async () => {
+                console.log("🔄 Botón presionado - Obteniendo distancia...");
+                await getLastDistance();
+            });
             
-            console.log("🖥️  Actualizando interfaz...");
-            
-            // 1. ACTUALIZAR DISTANCIA DEL SENSOR
-            const distanceElement = document.querySelector("#distance-value");
-            if (distanceElement) {
-                if (decodedData) {
-                    distanceElement.textContent = `${decodedData.distance_mm} mm`;
-                    console.log(`📍 Distancia actualizada: ${decodedData.distance_mm} mm`);
-                } else {
-                    distanceElement.textContent = "-- mm";
-                    console.log("📍 Distancia: Sin datos");
-                }
-            }
-            
-            // 2. ACTUALIZAR BARRA DE NIVEL VISUAL
-            const distanceBar = document.querySelector(".distance-bar");
-            if (distanceBar && decodedData) {
-                // Calcular altura de la barra (0-100%)
-                const barHeight = 100 * (DIST_VACIO - decodedData.distance_mm) / (DIST_VACIO - DIST_LLENO);
-                const clampedHeight = Math.max(0, Math.min(100, barHeight));
-                
-                distanceBar.style.height = `${clampedHeight}%`;
-                console.log(`📊 Barra visual: ${clampedHeight.toFixed(1)}% de altura`);
-                
-                // Cambiar color según nivel
-                if (clampedHeight < 20) {
-                    distanceBar.style.backgroundColor = "#f44336"; // Rojo (bajo)
-                } else if (clampedHeight < 50) {
-                    distanceBar.style.backgroundColor = "#FF9800"; // Naranja (medio)
-                } else {
-                    distanceBar.style.backgroundColor = "#4CAF50"; // Verde (alto)
-                }
-            }
-            
-            // 3. ACTUALIZAR NIVEL DEL TANQUE
-            const tankLevelElement = document.querySelector("#tank-level");
-            const tankLitersElement = document.querySelector("#tank-liters");
-            
-            if (tankLevelElement && tankLitersElement) {
-                if (tankData) {
-                    tankLevelElement.textContent = `${tankData.percentage}%`;
-                    tankLitersElement.textContent = `${tankData.liters} Litros`;
-                    
-                    // Color según nivel
-                    if (tankData.percentage < 20) {
-                        tankLevelElement.style.color = "#f44336";
-                        tankLitersElement.style.color = "#f44336";
-                    } else if (tankData.percentage < 50) {
-                        tankLevelElement.style.color = "#FF9800";
-                        tankLitersElement.style.color = "#FF9800";
-                    } else {
-                        tankLevelElement.style.color = "#4CAF50";
-                        tankLitersElement.style.color = "#4CAF50";
-                    }
-                    
-                    console.log(`🛢️  Tanque: ${tankData.percentage}% (${tankData.liters} L)`);
-                } else {
-                    tankLevelElement.textContent = "--%";
-                    tankLitersElement.textContent = "-- Litros";
-                    tankLevelElement.style.color = "#757575";
-                    tankLitersElement.style.color = "#757575";
-                    console.log("🛢️  Tanque: Sin datos");
-                }
-            }
-            
-            // 4. ACTUALIZAR BATERÍA
-            const batteryElement = document.querySelector("#battery");
-            if (batteryElement) {
-                if (data && data.result && data.result[0]) {
-                    const uplink = data.result[0].uplink_message;
-                    
-                    // Intentar obtener batería de diferentes fuentes
-                    let batteryVoltage = null;
-                    
-                    if (uplink && uplink.decoded_payload && uplink.decoded_payload.battery) {
-                        batteryVoltage = uplink.decoded_payload.battery;
-                    } else if (decodedData && decodedData.raw_bytes && decodedData.raw_bytes.length >= 2) {
-                        // Si el segundo byte parece ser voltaje (ej: 33 = 3.3V)
-                        const batteryByte = decodedData.raw_bytes[1];
-                        if (batteryByte >= 20 && batteryByte <= 45) {
-                            batteryVoltage = (batteryByte / 10).toFixed(1);
-                        }
-                    }
-                    
-                    if (batteryVoltage) {
-                        batteryElement.textContent = `${batteryVoltage} V`;
-                        
-                        // Color según voltaje
-                        if (batteryVoltage < 3.0) {
-                            batteryElement.style.color = "#f44336";
-                        } else if (batteryVoltage < 3.3) {
-                            batteryElement.style.color = "#FF9800";
-                        } else {
-                            batteryElement.style.color = "#4CAF50";
-                        }
-                        
-                        console.log(`🔋 Batería: ${batteryVoltage} V`);
-                    } else {
-                        batteryElement.textContent = "-- V";
-                        batteryElement.style.color = "#757575";
-                        console.log("🔋 Batería: No disponible");
-                    }
-                } else {
-                    batteryElement.textContent = "-- V";
-                    batteryElement.style.color = "#757575";
-                }
-            }
-            
-            // 5. ACTUALIZAR ÚLTIMA LECTURA
-            const lastReadingElement = document.querySelector("#last-reading");
-            if (lastReadingElement) {
-                if (data && data.result && data.result[0]) {
-                    const receivedAt = new Date(data.result[0].received_at);
-                    const formatted = formatDate(receivedAt);
-                    lastReadingElement.textContent = formatted.fullStr;
-                    console.log(`🕐 Última lectura: ${formatted.fullStr}`);
-                } else {
-                    lastReadingElement.textContent = "--:-- --/--/----";
-                    console.log("🕐 Última lectura: Sin datos");
-                }
-            }
-            
-            // 6. ACTUALIZAR ESTADO DE DATOS
-            const dataStatusElement = document.querySelector("#data-status");
-            const dataStatusValueElement = document.querySelector("#data-status-value");
-            
-            if (dataStatusElement && dataStatusValueElement) {
-                if (data && data.result && data.result[0]) {
-                    dataStatusElement.textContent = "✅ Conectado - Datos actuales";
-                    dataStatusElement.className = "status-text success";
-                    dataStatusValueElement.textContent = "OK";
-                    dataStatusValueElement.className = "data-value success";
-                } else {
-                    dataStatusElement.textContent = "⚠️ Sin datos recientes";
-                    dataStatusElement.className = "status-text warning";
-                    dataStatusValueElement.textContent = "Sin datos";
-                    dataStatusValueElement.className = "data-value warning";
-                }
-            }
-            
-            // 7. ACTUALIZAR PRÓXIMA ACTUALIZACIÓN
-            const nextUpdateElement = document.querySelector("#next-update");
-            if (nextUpdateElement) {
-                const nextUpdate = new Date(now.getTime() + 30 * 1000);
-                const formatted = formatDate(nextUpdate);
-                nextUpdateElement.textContent = `Próxima actualización: ${formatted.timeStr}`;
-            }
-            
-            // 8. ACTUALIZAR ESTADO DEL SISTEMA
-            const systemStatusElement = document.querySelector("#system-status");
-            if (systemStatusElement) {
-                if (data && data.result && data.result[0]) {
-                    systemStatusElement.innerHTML = '<i class="fas fa-check-circle"></i> Sistema operativo';
-                    systemStatusElement.className = "status-text success";
-                } else {
-                    systemStatusElement.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Esperando datos del sensor';
-                    systemStatusElement.className = "status-text warning";
-                }
-            }
-            
-            console.log("✅ Interfaz actualizada");
-        }
-
-        /**
-         * Función principal que orquesta todo el proceso
-         */
-        async function updateData() {
-            console.log("=".repeat(60));
-            console.log("🔄 INICIANDO ACTUALIZACIÓN DE DATOS");
-            console.log("=".repeat(60));
-            
-            // Mostrar estado "Conectando..."
-            const statusElement = document.querySelector("#data-status");
-            if (statusElement) {
-                statusElement.textContent = "Conectando...";
-                statusElement.className = "status-text";
-            }
-            
-            // 1. OBTENER DATOS DE TTN
-            console.log("\n📡 PASO 1: Obteniendo datos de TTN");
-            const ttnData = await fetchTTNData();
-            
-            let decodedData = null;
-            let tankData = null;
-            
-            // 2. PROCESAR DATOS SI EXISTEN
-            if (ttnData && ttnData.result && ttnData.result.length > 0) {
-                console.log("\n🔍 PASO 2: Procesando datos recibidos");
-                
-                const latestMessage = ttnData.result[0];
-                const hexPayload = latestMessage.uplink_message?.frm_payload;
-                
-                if (hexPayload) {
-                    console.log(`📦 Payload encontrado: ${hexPayload}`);
-                    decodedData = decodePayload(hexPayload);
-                    
-                    if (decodedData) {
-                        console.log("\n🧮 PASO 3: Calculando nivel del tanque");
-                        tankData = calculateTankLevel(decodedData.distance_mm);
-                    } else {
-                        console.log("⚠️  No se pudo decodificar el payload");
-                    }
-                } else {
-                    console.log("⚠️  No hay payload en el mensaje");
-                }
-            } else {
-                console.log("\n⚠️  No se obtuvieron datos de TTN");
-                console.log("Posibles causas:");
-                console.log("1. El dispositivo no ha transmitido en los últimos 10 minutos");
-                console.log("2. Problemas de conexión del dispositivo");
-                console.log("3. Configuración incorrecta en TTN");
-                console.log("4. API Key sin permisos suficientes");
-            }
-            
-            // 3. ACTUALIZAR INTERFAZ
-            console.log("\n🎨 PASO 4: Actualizando interfaz de usuario");
-            updateDisplay(ttnData, decodedData, tankData);
-            
-            console.log("\n✅ ACTUALIZACIÓN COMPLETADA");
-            console.log("=".repeat(60));
-        }
-
-        /**
-         * Forzar actualización manual (para el botón)
-         */
-        function forceUpdate() {
-            console.log("\n🔘 Botón presionado: Forzando actualización manual");
-            updateData();
-        }
-
-        // ===============================
-        // INICIALIZACIÓN DEL SISTEMA
-        // ===============================
-        document.addEventListener("DOMContentLoaded", function() {
-            console.log("🚀 SISTEMA DE MONITOREO INICIADO");
-            console.log(`📊 Dispositivo: ${DEVICE_ID}`);
-            console.log(`📊 Aplicación TTN: ${TTN_APP_ID}`);
-            console.log(`📊 Configuración tanque:`);
-            console.log(`   - Capacidad: ${VOL_MAX} litros`);
-            console.log(`   - Distancia vacío: ${DIST_VACIO} mm`);
-            console.log(`   - Distancia lleno: ${DIST_LLENO} mm`);
-            
-            // Configurar botones
-            const updateButton = document.querySelector("#update-button");
-            const forceTTNButton = document.querySelector("#force-ttn-button");
-            
-            if (updateButton) {
-                updateButton.addEventListener("click", forceUpdate);
-                console.log("✅ Botón 'Actualizar Ahora' configurado");
-            }
-            
-            if (forceTTNButton) {
-                forceTTNButton.addEventListener("click", forceUpdate);
-                console.log("✅ Botón 'Forzar TTN' configurado");
-            }
-            
-            // Realizar primera actualización
+            // Obtener distancia automáticamente al cargar
             setTimeout(() => {
-                updateData();
+                console.log("⏰ Obteniendo distancia inicial...");
+                getLastDistance();
             }, 1000);
             
-            // Configurar actualización automática cada 30 segundos
-            setInterval(updateData, 30000);
-            console.log("⏰ Actualización automática configurada cada 30 segundos");
-            
-            console.log("=".repeat(60));
-        });
-
-        /**
-         * Función para debug: Mostrar todos los datos crudos
-         */
-        function debugShowRawData(data) {
-            if (data && data.result && data.result[0]) {
-                console.log("🔍 DATOS CRUDOS COMPLETOS:");
-                console.log(JSON.stringify(data.result[0], null, 2));
-            }
+            // Actualizar automáticamente cada 30 segundos
+            setInterval(() => {
+                console.log("⏰ Actualización automática...");
+                getLastDistance();
+            }, 30000);
         }
+
+        // Iniciar cuando se cargue la página
+        document.addEventListener("DOMContentLoaded", init);
     </script>
 </body>
 </html>
